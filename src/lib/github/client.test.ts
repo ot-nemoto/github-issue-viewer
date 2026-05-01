@@ -160,6 +160,15 @@ describe("getRepository", () => {
     expect(error).toBeInstanceOf(GitHubApiError);
     expect(error.status).toBe(404);
   });
+
+  it("トークンなしの場合 Authorization ヘッダーを付与しない", async () => {
+    vi.mocked(fetch).mockReturnValueOnce(mockResponse(mockRepo) as never);
+    await getRepository("testuser", "test-repo");
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    const headers = (options as RequestInit).headers as Record<string, string>;
+    expect(headers.Authorization).toBeUndefined();
+    expect(headers.Accept).toBe("application/vnd.github+json");
+  });
 });
 
 describe("getIssues", () => {
