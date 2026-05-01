@@ -1,0 +1,146 @@
+name: Auto PR develop → master
+
+on:
+  schedule:
+    - cron: '0 21 * * *' # JST AM6:00 (UTC 21:00)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: auto-pr-develop-to-master
+  cancel-in-progress: false
+
+jobs:
+  auto-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check diff between develop and master
+        id: diff
+        run: |
+          git fetch origin
+          COUNT=$(git log origin/master..origin/develop --oneline | wc -l | tr -d ' ')
+          if [ "$COUNT" -gt 0 ]; then
+            echo "has_diff=true" >> "$GITHUB_OUTPUT"
+            echo "差分あり: ${COUNT} コミット"
+          else
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
+            echo "差分なし。スキップします。"
+          fi
+
+      - name: Determine bump label and build PR body
+        id: content
+        if: steps.diff.outputs.has_diff == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN }}
+        run: |
+          LABEL="bump:patch"
+          ISSUES_SECTION=""
+
+          # コミットメッセージから Issue 番号を抽出
+          ISSUE_NUMBERS=$(git log origin/master..origin/develop --format="%B" \
+            | grep -oE '(Closes|Fixes|closes|fixes) #[0-9]+' \
+            | grep -oE '[0-9]+' || true)
+
+          # マージコミットの PR description からも Issue 番号を抽出
+          # （gh pr merge --merge は Closes #N を PR description にのみ記録するため）
+          PR_NUMBERS=$(git log origin/master..origin/develop --format="%s" \
+            | grep -oE 'pull request #[0-9]+' \
+            | grep -oE '[0-9]+' \
+            | sort -u || true)
+          for PR_NUM in $PR_NUMBERS; do
+            PR_CLOSES=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUM}" --jq '.body // ""' 2>/dev/null \
+              | grep -oE '(Closes|Fixes|closes|fixes) #[0-9]+' \
+              | grep -oE '[0-9]+' || true)
+            ISSUE_NUMBERS="${ISSUE_NUMBERS} ${PR_CLOSES}"
+          done
+
+          ISSUE_NUMBERS=$(echo "$ISSUE_NUMBERS" | tr ' ' '\n' | grep -v '^$' | sort -u || true)
+
+          for NUM in $ISSUE_NUMBERS; do
+            ISSUE_DATA=$(gh issue view "$NUM" --json title,labels 2>/dev/null) || continue
+            ISSUE_TITLE=$(echo "$ISSUE_DATA" | jq -r '.title')
+            ISSUE_LABELS=$(echo "$ISSUE_DATA" | jq -r '.labels[].name')
+
+            ISSUES_SECTION="${ISSUES_SECTION}- #${NUM} ${ISSUE_TITLE}\n"
+
+            # enhancement ラベルがあれば bump:minor に昇格
+            if echo "$ISSUE_LABELS" | grep -q "^enhancement$"; then
+              LABEL="bump:minor"
+            fi
+          done
+
+          # Dependabot コミットが含まれる場合はログに記録（patch のまま）
+          if git log origin/master..origin/develop --format="%s" | grep -q "^chore(deps"; then
+            echo "Dependabot コミットを検出 → bump:patch"
+          fi
+
+          # PR 本文を生成
+          {
+            echo "## 概要"
+            echo ""
+            echo "develop ブランチの変更を master にマージします。"
+            echo ""
+            if [ -n "$ISSUES_SECTION" ]; then
+              echo "## 含まれる Issue"
+              echo ""
+              printf "%b" "$ISSUES_SECTION"
+            else
+              echo "## 含まれる変更"
+              echo ""
+              git log origin/master..origin/develop --oneline | head -10 | sed 's/^/- /'
+            fi
+            echo ""
+            echo "🤖 このPRは自動生成されました"
+          } > /tmp/pr_body.md
+
+          echo "label=$LABEL" >> "$GITHUB_OUTPUT"
+          echo "判定ラベル: $LABEL"
+
+      - name: Create or update PR
+        if: steps.diff.outputs.has_diff == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN }}
+        run: |
+          LABEL="${{ steps.content.outputs.label }}"
+          REPO="${{ github.repository }}"
+          OWNER="${{ github.repository_owner }}"
+          PR_BODY=$(cat /tmp/pr_body.md)
+
+          # 既存の open PR を REST API で確認（GraphQL 不使用）
+          EXISTING_PR=$(gh api "repos/$REPO/pulls?base=master&head=${OWNER}:develop&state=open" --jq '.[0].number // empty')
+
+          if [ -z "$EXISTING_PR" ]; then
+            # 新規 PR を REST API で作成
+            PR_NUMBER=$(gh api "repos/$REPO/pulls" \
+              --method POST \
+              --field title="chore: develop → master $(TZ=Asia/Tokyo date +'%Y-%m-%d')" \
+              --field body="$PR_BODY" \
+              --field head="develop" \
+              --field base="master" \
+              --jq '.number')
+            # ラベルを REST API で追加
+            gh api "repos/$REPO/issues/$PR_NUMBER/labels" \
+              --method POST \
+              --field "labels[]=$LABEL"
+            echo "✅ PR を新規作成しました（ラベル: $LABEL）"
+          else
+            # 本文を REST API で更新
+            gh api "repos/$REPO/pulls/$EXISTING_PR" \
+              --method PATCH \
+              --field body="$PR_BODY"
+            # ラベルを REST API で差し替え
+            gh api "repos/$REPO/issues/$EXISTING_PR/labels/bump%3Aminor" --method DELETE 2>/dev/null || true
+            gh api "repos/$REPO/issues/$EXISTING_PR/labels/bump%3Apatch" --method DELETE 2>/dev/null || true
+            gh api "repos/$REPO/issues/$EXISTING_PR/labels" \
+              --method POST \
+              --field "labels[]=$LABEL"
+            echo "✅ PR #${EXISTING_PR} を更新しました（ラベル: $LABEL）"
+          fi
