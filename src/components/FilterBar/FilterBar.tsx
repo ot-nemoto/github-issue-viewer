@@ -55,6 +55,7 @@ export function FilterBar({
             <button
               key={opt.value}
               type="button"
+              aria-pressed={filter.type === opt.value}
               onClick={() => onChange({ ...filter, type: opt.value })}
               className={`px-3 py-1 text-xs ${
                 filter.type === opt.value
@@ -75,6 +76,7 @@ export function FilterBar({
             <button
               key={opt.value}
               type="button"
+              aria-pressed={filter.status === opt.value}
               onClick={() => onChange({ ...filter, status: opt.value })}
               className={`px-3 py-1 text-xs ${
                 filter.status === opt.value
@@ -95,6 +97,9 @@ export function FilterBar({
             <button
               key={repo}
               type="button"
+              aria-pressed={
+                filter.repos.length === 0 || filter.repos.includes(repo)
+              }
               onClick={() => toggleRepo(repo)}
               className={`px-2 py-1 text-xs rounded border ${
                 filter.repos.length === 0 || filter.repos.includes(repo)
@@ -115,6 +120,9 @@ export function FilterBar({
             <button
               key={label}
               type="button"
+              aria-pressed={
+                filter.labels.length === 0 || filter.labels.includes(label)
+              }
               onClick={() => toggleLabel(label)}
               className={`px-2 py-1 text-xs rounded border ${
                 filter.labels.length === 0 || filter.labels.includes(label)
