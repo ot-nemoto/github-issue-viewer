@@ -20,6 +20,7 @@ export function RepoManager() {
   }, []);
 
   async function handleAdd() {
+    if (adding) return;
     const repo = input.trim();
     if (!repo) return;
 
@@ -63,7 +64,7 @@ export function RepoManager() {
             setError(null);
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter") handleAdd();
+            if (e.key === "Enter" && !adding) handleAdd();
           }}
           placeholder="owner/repo"
           className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
