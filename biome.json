@@ -27,7 +27,8 @@
       "*.lock",
       "next-env.d.ts",
       "tsconfig.json",
-      ".devcontainer"
+      ".devcontainer",
+      "package-lock.json"
     ]
   }
 }
