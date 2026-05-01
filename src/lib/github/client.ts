@@ -85,7 +85,7 @@ export async function getRepository(
 export async function getIssues(
   owner: string,
   repo: string,
-  token: string,
+  token?: string,
 ): Promise<GitHubIssue[]> {
   return fetchAllPages<GitHubIssue>(
     `${BASE_URL}/repos/${owner}/${repo}/issues?state=all`,
@@ -96,7 +96,7 @@ export async function getIssues(
 export async function getPullRequests(
   owner: string,
   repo: string,
-  token: string,
+  token?: string,
 ): Promise<GitHubPullRequest[]> {
   return fetchAllPages<GitHubPullRequest>(
     `${BASE_URL}/repos/${owner}/${repo}/pulls?state=all`,
