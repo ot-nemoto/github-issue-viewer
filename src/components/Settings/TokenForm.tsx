@@ -48,7 +48,9 @@ export function TokenForm() {
 
   return (
     <section className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold mb-4">GitHub Token</h2>
+      <h2 id="token-section-label" className="text-lg font-semibold mb-4">
+        GitHub Token
+      </h2>
       <div className="flex gap-2">
         <input
           type="password"
@@ -57,6 +59,7 @@ export function TokenForm() {
             setInput(e.target.value);
             setValidation({ status: "idle" });
           }}
+          aria-labelledby="token-section-label"
           placeholder="ghp_xxxxxxxxxxxx"
           autoComplete="off"
           spellCheck={false}
