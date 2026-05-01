@@ -12,7 +12,7 @@ type ValidationState =
 
 export function TokenForm() {
   const [input, setInput] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
   const [validation, setValidation] = useState<ValidationState>({
     status: "idle",
   });
@@ -21,7 +21,7 @@ export function TokenForm() {
     const token = getToken();
     if (token) {
       setInput(token);
-      setSaved(true);
+      setHasToken(true);
     }
   }, []);
 
@@ -32,7 +32,7 @@ export function TokenForm() {
     try {
       const user = await validateToken(token);
       setToken(token);
-      setSaved(true);
+      setHasToken(true);
       setValidation({ status: "success", username: user.login });
     } catch {
       setValidation({ status: "error", message: "トークンが無効です" });
@@ -42,7 +42,7 @@ export function TokenForm() {
   function handleRemove() {
     removeToken();
     setInput("");
-    setSaved(false);
+    setHasToken(false);
     setValidation({ status: "idle" });
   }
 
@@ -55,7 +55,6 @@ export function TokenForm() {
           value={input}
           onChange={(e) => {
             setInput(e.target.value);
-            setSaved(false);
             setValidation({ status: "idle" });
           }}
           placeholder="ghp_xxxxxxxxxxxx"
@@ -72,7 +71,7 @@ export function TokenForm() {
         <button
           type="button"
           onClick={handleRemove}
-          disabled={!saved}
+          disabled={!hasToken}
           className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           削除
