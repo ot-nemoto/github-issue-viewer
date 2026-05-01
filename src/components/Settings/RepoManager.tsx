@@ -24,7 +24,12 @@ export function RepoManager() {
     const repo = input.trim();
     if (!repo) return;
 
-    const [owner, name] = repo.split("/");
+    const parts = repo.split("/");
+    if (parts.length !== 2) {
+      setError("owner/repo の形式で入力してください");
+      return;
+    }
+    const [owner, name] = parts.map((p) => p.trim());
     if (!owner || !name) {
       setError("owner/repo の形式で入力してください");
       return;
