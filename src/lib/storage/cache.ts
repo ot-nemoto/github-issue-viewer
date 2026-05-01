@@ -7,12 +7,22 @@ type CacheEntry<T> = {
 };
 
 export function getCache<T>(key: string, ttl = DEFAULT_TTL): T | null {
-  const raw = localStorage.getItem(`${CACHE_PREFIX}${key}`);
+  const cacheKey = `${CACHE_PREFIX}${key}`;
+  const raw = localStorage.getItem(cacheKey);
   if (!raw) return null;
   try {
-    const entry = JSON.parse(raw) as CacheEntry<T>;
-    if (Date.now() - entry.timestamp > ttl) return null;
-    return entry.data;
+    const entry = JSON.parse(raw) as unknown;
+    if (
+      typeof entry !== "object" ||
+      entry === null ||
+      typeof (entry as { timestamp?: unknown }).timestamp !== "number"
+    ) {
+      localStorage.removeItem(cacheKey);
+      return null;
+    }
+    const cacheEntry = entry as CacheEntry<T>;
+    if (Date.now() - cacheEntry.timestamp > ttl) return null;
+    return cacheEntry.data;
   } catch {
     return null;
   }
