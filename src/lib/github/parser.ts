@@ -1,6 +1,6 @@
 // Closes/Fixes/Resolves #123 または owner/repo#123 形式を抽出
 const RELATED_ISSUE_RE =
-  /(?:closes?|fixes?|resolves?)\s+(?:[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)?#(\d+)/gi;
+  /\b(?:closes?|fixes?|resolves?)\b\s+(?:[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)?#(\d+)/gi;
 
 export function parseRelatedIssues(body: string | null): number[] {
   if (!body) return [];
