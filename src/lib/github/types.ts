@@ -45,7 +45,7 @@ export type GitHubIssue = {
   pull_request?: {
     url: string;
     html_url: string;
-    merged_at: string | null;
+    merged_at?: string | null;
   };
 };
 
