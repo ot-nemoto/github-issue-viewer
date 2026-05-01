@@ -36,10 +36,11 @@ async function fetchRepoItems(
 
   const issueItems: GitHubItem[] = issues
     .filter((issue) => !issue.pull_request)
-    .map((issue) => ({ kind: "issue" as const, ...issue }));
+    .map((issue) => ({ kind: "issue" as const, repo, ...issue }));
 
   const prItems: GitHubItem[] = prs.map((pr) => ({
     kind: "pull_request" as const,
+    repo,
     ...pr,
   }));
 

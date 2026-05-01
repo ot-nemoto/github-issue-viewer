@@ -1,8 +1,8 @@
 import type { GitHubIssue, GitHubPullRequest } from "@/lib/github/types";
 
 export type GitHubItem =
-  | ({ kind: "issue" } & GitHubIssue)
-  | ({ kind: "pull_request" } & GitHubPullRequest);
+  | ({ kind: "issue"; repo: string } & GitHubIssue)
+  | ({ kind: "pull_request"; repo: string } & GitHubPullRequest);
 
 export type RepoData = {
   repo: string;
