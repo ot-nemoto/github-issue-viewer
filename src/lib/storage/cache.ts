@@ -8,9 +8,9 @@ type CacheEntry<T> = {
 
 export function getCache<T>(key: string, ttl = DEFAULT_TTL): T | null {
   const cacheKey = `${CACHE_PREFIX}${key}`;
-  const raw = localStorage.getItem(cacheKey);
-  if (!raw) return null;
   try {
+    const raw = localStorage.getItem(cacheKey);
+    if (!raw) return null;
     const entry = JSON.parse(raw) as unknown;
     if (
       typeof entry !== "object" ||
@@ -29,21 +29,33 @@ export function getCache<T>(key: string, ttl = DEFAULT_TTL): T | null {
 }
 
 export function setCache<T>(key: string, data: T): void {
-  const entry: CacheEntry<T> = { data, timestamp: Date.now() };
-  localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(entry));
+  try {
+    const entry: CacheEntry<T> = { data, timestamp: Date.now() };
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(entry));
+  } catch {
+    // ストレージ制限環境では無視
+  }
 }
 
 export function clearCache(key: string): void {
-  localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+  try {
+    localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+  } catch {
+    // ストレージ制限環境では無視
+  }
 }
 
 export function clearAllCache(): void {
-  const keysToRemove: string[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k?.startsWith(CACHE_PREFIX)) keysToRemove.push(k);
-  }
-  for (const k of keysToRemove) {
-    localStorage.removeItem(k);
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(CACHE_PREFIX)) keysToRemove.push(k);
+    }
+    for (const k of keysToRemove) {
+      localStorage.removeItem(k);
+    }
+  } catch {
+    // ストレージ制限環境では無視
   }
 }
