@@ -9,7 +9,12 @@ import { useCallback, useEffect, useState } from "react";
 type State =
   | { status: "idle" }
   | { status: "loading" }
-  | { status: "success"; data: GitHubItem[]; fetchedAt: number }
+  | {
+      status: "success";
+      data: GitHubItem[];
+      fetchedAt: number;
+      hasRepos: boolean;
+    }
   | { status: "error"; message: string };
 
 function parseRepoIdentifier(repo: string): { owner: string; name: string } {
@@ -55,7 +60,12 @@ export function useGitHubData() {
     const token = getToken();
 
     if (repos.length === 0) {
-      setState({ status: "success", data: [], fetchedAt: Date.now() });
+      setState({
+        status: "success",
+        data: [],
+        fetchedAt: Date.now(),
+        hasRepos: false,
+      });
       return;
     }
 
@@ -87,7 +97,12 @@ export function useGitHubData() {
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
       );
 
-      setState({ status: "success", data: sorted, fetchedAt: Date.now() });
+      setState({
+        status: "success",
+        data: sorted,
+        fetchedAt: Date.now(),
+        hasRepos: true,
+      });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "データの取得に失敗しました";

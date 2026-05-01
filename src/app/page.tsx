@@ -4,7 +4,6 @@ import { FilterBar, type FilterState } from "@/components/FilterBar/FilterBar";
 import { IssueList } from "@/components/IssueList/IssueList";
 import { Spinner } from "@/components/ui/Spinner";
 import { useGitHubData } from "@/lib/hooks/useGitHubData";
-import { getRepos } from "@/lib/storage/settings";
 import type { GitHubItem } from "@/types";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -48,9 +47,6 @@ function applyFilter(items: GitHubItem[], filter: FilterState): GitHubItem[] {
 export default function HomePage() {
   const { state, refresh } = useGitHubData();
   const [filter, setFilter] = useState<FilterState>(DEFAULT_FILTER);
-
-  const repos = getRepos();
-  const hasRepos = repos.length > 0;
 
   const { filteredItems, availableRepos, availableLabels } = useMemo(() => {
     if (state.status !== "success") {
@@ -119,7 +115,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {state.status === "success" && !hasRepos && (
+      {state.status === "success" && !state.hasRepos && (
         <div className="py-16 text-center">
           <p className="text-gray-500 text-sm mb-3">
             設定画面でリポジトリを追加してください
@@ -133,7 +129,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {state.status === "success" && hasRepos && (
+      {state.status === "success" && state.hasRepos && (
         <div className="flex flex-col gap-3">
           <FilterBar
             filter={filter}
