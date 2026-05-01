@@ -17,15 +17,16 @@ export class GitHubApiError extends Error {
   }
 }
 
-function buildHeaders(token: string): HeadersInit {
-  return {
-    Authorization: `Bearer ${token}`,
+function buildHeaders(token?: string): HeadersInit {
+  const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
   };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
 }
 
-async function githubFetch(url: string, token: string): Promise<Response> {
+async function githubFetch(url: string, token?: string): Promise<Response> {
   const response = await fetch(url, { headers: buildHeaders(token) });
 
   if (!response.ok) {
@@ -48,7 +49,7 @@ function parseNextUrl(linkHeader: string | null): string | null {
   return match ? match[1] : null;
 }
 
-async function fetchAllPages<T>(url: string, token: string): Promise<T[]> {
+async function fetchAllPages<T>(url: string, token?: string): Promise<T[]> {
   const results: T[] = [];
   const initialUrl = new URL(url);
   initialUrl.searchParams.set("per_page", "100");
@@ -72,7 +73,7 @@ export async function validateToken(token: string): Promise<GitHubUser> {
 export async function getRepository(
   owner: string,
   repo: string,
-  token: string,
+  token?: string,
 ): Promise<GitHubRepository> {
   const response = await githubFetch(
     `${BASE_URL}/repos/${owner}/${repo}`,
