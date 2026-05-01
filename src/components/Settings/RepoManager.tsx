@@ -54,7 +54,9 @@ export function RepoManager() {
 
   return (
     <section className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold mb-4">リポジトリ</h2>
+      <h2 id="repo-section-label" className="text-lg font-semibold mb-4">
+        リポジトリ
+      </h2>
       <div className="flex gap-2">
         <input
           type="text"
@@ -67,6 +69,7 @@ export function RepoManager() {
             if (e.key === "Enter" && !adding) handleAdd();
           }}
           placeholder="owner/repo"
+          aria-label="リポジトリ名 (owner/repo 形式)"
           className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
@@ -87,6 +90,7 @@ export function RepoManager() {
               <button
                 type="button"
                 onClick={() => handleRemove(repo)}
+                aria-label={`${repo} を削除`}
                 className="text-sm text-red-600 hover:text-red-800"
               >
                 削除
