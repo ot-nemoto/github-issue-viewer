@@ -53,22 +53,25 @@ public/
 ### next.config.ts
 
 ```ts
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+const isStatic = process.env.BUILD_MODE === "static";
 
 export default {
-  output: 'export',
-  basePath,
-  trailingSlash: true,
-  images: { unoptimized: true },
+  ...(isStatic && {
+    output: "export",
+    basePath: "/github-issue-viewer",
+    assetPrefix: "/github-issue-viewer",
+    trailingSlash: true,
+    images: { unoptimized: true },
+  }),
 };
 ```
 
 ### 環境別の動作
 
-| 環境 | コマンド | BASE_PATH | URL |
-|------|----------|-----------|-----|
-| ローカル開発 | `npm run dev` | `''`（未設定） | `http://localhost:3000/` |
-| GitHub Pages ビルド | `npm run build:static` | `/github-issue-viewer` | `https://ot-nemoto.github.io/github-issue-viewer/` |
+| 環境 | コマンド | BUILD_MODE | URL |
+|------|----------|------------|-----|
+| ローカル開発 | `npm run dev` | 未設定 | `http://localhost:3000/` |
+| GitHub Pages ビルド | `npm run build:static` | `static` | `https://ot-nemoto.github.io/github-issue-viewer/` |
 
 ### package.json スクリプト
 
@@ -76,17 +79,11 @@ export default {
 {
   "dev": "next dev",
   "build": "next build",
-  "build:static": "NEXT_PUBLIC_BASE_PATH=/github-issue-viewer next build",
+  "build:static": "cross-env BUILD_MODE=static next build",
   "start": "next start",
   "lint": "biome check .",
   "test": "vitest run"
 }
-```
-
-### .env.local（ローカル開発用、Git管理外）
-
-```env
-NEXT_PUBLIC_BASE_PATH=
 ```
 
 ## localStorage キー設計
