@@ -53,4 +53,16 @@ describe("parseRelatedIssues", () => {
       parseRelatedIssues("This PR fixes #99 and also closes #100."),
     ).toEqual([99, 100]);
   });
+
+  it("prefixes #1 は抽出しない", () => {
+    expect(
+      parseRelatedIssues("This change prefixes #1 in generated text."),
+    ).toEqual([]);
+  });
+
+  it("unfixes #2 は抽出しない", () => {
+    expect(
+      parseRelatedIssues("This note mentions unfixes #2 as plain text."),
+    ).toEqual([]);
+  });
 });
