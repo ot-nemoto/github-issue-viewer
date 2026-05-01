@@ -190,7 +190,7 @@ describe("useGitHubData — キャッシュ", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("refresh(true) でキャッシュを無視して再取得する", async () => {
+  it("refresh() でキャッシュを無視して再取得する", async () => {
     const cached = [
       {
         ...makeIssue(1, "2024-01-01T00:00:00Z"),
