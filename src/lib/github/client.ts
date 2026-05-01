@@ -50,7 +50,9 @@ function parseNextUrl(linkHeader: string | null): string | null {
 
 async function fetchAllPages<T>(url: string, token: string): Promise<T[]> {
   const results: T[] = [];
-  let nextUrl: string | null = `${url}&per_page=100`;
+  const initialUrl = new URL(url);
+  initialUrl.searchParams.set("per_page", "100");
+  let nextUrl: string | null = initialUrl.toString();
 
   while (nextUrl) {
     const response = await githubFetch(nextUrl, token);
