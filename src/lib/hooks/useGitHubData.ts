@@ -12,11 +12,22 @@ type State =
   | { status: "success"; data: GitHubItem[]; fetchedAt: number }
   | { status: "error"; message: string };
 
+function parseRepoIdentifier(repo: string): { owner: string; name: string } {
+  const parts = repo.split("/");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    throw new Error(
+      `リポジトリ設定 "${repo}" は不正です。"owner/repo" 形式で指定してください。`,
+    );
+  }
+  const [owner, name] = parts;
+  return { owner, name };
+}
+
 async function fetchRepoItems(
   repo: string,
   token: string | null,
 ): Promise<GitHubItem[]> {
-  const [owner, name] = repo.split("/");
+  const { owner, name } = parseRepoIdentifier(repo);
   const t = token ?? undefined;
   const [issues, prs] = await Promise.all([
     getIssues(owner, name, t),
