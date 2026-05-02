@@ -47,8 +47,11 @@ export function TokenForm() {
   }
 
   return (
-    <section className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 id="token-section-label" className="text-lg font-semibold mb-4">
+    <section className="bg-white rounded-md border border-[#d0d7de] p-5">
+      <h2
+        id="token-section-label"
+        className="text-sm font-semibold text-[#1f2328] mb-3"
+      >
         GitHub Token
       </h2>
       <div className="flex gap-2">
@@ -63,13 +66,13 @@ export function TokenForm() {
           placeholder="ghp_xxxxxxxxxxxx"
           autoComplete="off"
           spellCheck={false}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 py-1.5 border border-[#d0d7de] rounded-md text-sm text-[#1f2328] focus:outline-none focus:ring-2 focus:ring-[#0969da] focus:border-[#0969da]"
         />
         <button
           type="button"
           onClick={handleValidate}
           disabled={!input.trim() || validation.status === "loading"}
-          className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-1.5 text-sm font-semibold bg-[#0969da] text-white rounded-md hover:bg-[#0860ca] disabled:opacity-50 disabled:cursor-not-allowed border border-black/10 transition-colors"
         >
           {validation.status === "loading" ? "検証中..." : "検証"}
         </button>
@@ -77,18 +80,18 @@ export function TokenForm() {
           type="button"
           onClick={handleRemove}
           disabled={!hasToken}
-          className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-1.5 text-sm font-semibold bg-white text-[#cf222e] border border-[#d0d7de] rounded-md hover:bg-[#ffebe9] hover:border-[#cf222e] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           削除
         </button>
       </div>
       {validation.status === "success" && (
-        <p className="mt-2 text-sm text-green-600">
+        <p className="mt-2 text-sm text-[#1a7f37]">
           ✓ @{validation.username} として認証済み
         </p>
       )}
       {validation.status === "error" && (
-        <p className="mt-2 text-sm text-red-600">✗ {validation.message}</p>
+        <p className="mt-2 text-sm text-[#cf222e]">✗ {validation.message}</p>
       )}
     </section>
   );

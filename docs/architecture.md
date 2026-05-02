@@ -23,14 +23,14 @@ src/
       page.tsx            # 設定画面
   components/
     IssueList/
-      IssueList.tsx       # リスト全体（フィルタ済みアイテムの表示）
+      IssueList.tsx       # リポジトリグループ表示・折りたたみ管理
       IssueItem.tsx       # 1行分のアイテム
     FilterBar/
-      FilterBar.tsx       # フィルタUI（タイプ・ステータス・リポジトリ・ラベル）
+      FilterBar.tsx       # フィルタUI（タイプ・ステータス・ラベル）
     Settings/
       TokenForm.tsx       # PAT入力・検証フォーム
       RepoManager.tsx     # リポジトリ追加・削除
-    ui/                   # 汎用UIコンポーネント（Button, Badge, Spinner等）
+    ui/                   # 汎用UIコンポーネント（Badge, Spinner等）
   lib/
     github/
       client.ts           # GitHub API クライアント（fetch ラッパー）
@@ -42,6 +42,7 @@ src/
     hooks/
       useGitHubData.ts    # データ取得・キャッシュ管理フック
       useSettings.ts      # 設定の読み書きフック
+    labelColor.ts         # ラベル固有色パレット（ハッシュベース、12色）
   types/
     index.ts              # アプリ共通型定義
 docs/

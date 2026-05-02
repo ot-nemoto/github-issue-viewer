@@ -12,23 +12,9 @@ npm run dev
 
 ## 環境変数
 
-### .env.local（ローカル開発用、Git 管理外）
+アプリ固有の環境変数はない。basePath の切り替えは `BUILD_MODE` で制御する（`next.config.ts` 参照）。
 
-```env
-# ローカルでは basePath を空にする（GitHub Pages 用のサブパスを使わない）
-NEXT_PUBLIC_BASE_PATH=
-```
-
-> `NEXT_PUBLIC_BASE_PATH` を未設定・空にすると `http://localhost:3000/` でルートアクセスできる。
-
-### GitHub Actions（CI/CD）
-
-`deploy-github-pages.yml` のビルドステップで以下を設定する：
-
-```yaml
-env:
-  NEXT_PUBLIC_BASE_PATH: /github-issue-viewer
-```
+`.env.local` はローカル開発用途（API キーなど）に使用できるが、現時点では必須項目なし。
 
 ## スクリプト
 
