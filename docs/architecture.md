@@ -19,8 +19,6 @@ src/
   app/
     page.tsx              # メインリスト画面
     layout.tsx            # ルートレイアウト
-    settings/
-      page.tsx            # 設定画面
   components/
     IssueList/
       IssueList.tsx       # リポジトリグループ表示・折りたたみ管理
@@ -28,6 +26,7 @@ src/
     FilterBar/
       FilterBar.tsx       # フィルタUI（タイプ・ステータス・ラベル）
     Settings/
+      SettingsModal.tsx   # 設定モーダル（開閉・Esc 対応）
       TokenForm.tsx       # PAT入力・検証フォーム
       RepoManager.tsx     # リポジトリ追加・削除
     ui/                   # 汎用UIコンポーネント（Badge, Spinner等）
