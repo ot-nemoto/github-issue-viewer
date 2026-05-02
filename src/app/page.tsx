@@ -7,7 +7,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { useGitHubData } from "@/lib/hooks/useGitHubData";
 import { getLabelColor } from "@/lib/labelColor";
 import type { GitHubItem } from "@/types";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 function formatTime(ts: number): string {
   const d = new Date(ts);
@@ -47,6 +47,7 @@ export default function HomePage() {
   const { state, refresh } = useGitHubData();
   const [filter, setFilter] = useState<FilterState>(DEFAULT_FILTER);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const handleCloseSettings = useCallback(() => setSettingsOpen(false), []);
 
   const { filteredItems, availableLabels } = useMemo(() => {
     if (state.status !== "success") {
@@ -159,7 +160,7 @@ export default function HomePage() {
           </div>
         )}
       </main>
-      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && <SettingsModal onClose={handleCloseSettings} />}
     </div>
   );
 }
