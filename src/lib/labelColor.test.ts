@@ -18,7 +18,13 @@ const PALETTE = [
 
 describe("getLabelColor", () => {
   it("同じラベル名は常に同じ色を返す（決定論的）", () => {
-    const labels = ["bug", "enhancement", "documentation", "feature", "help wanted"];
+    const labels = [
+      "bug",
+      "enhancement",
+      "documentation",
+      "feature",
+      "help wanted",
+    ];
     for (const label of labels) {
       expect(getLabelColor(label)).toBe(getLabelColor(label));
     }
