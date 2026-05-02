@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { RepoManager } from "./RepoManager";
 import { TokenForm } from "./TokenForm";
 
@@ -9,6 +9,15 @@ type SettingsModalProps = {
 };
 
 export function SettingsModal({ onClose }: SettingsModalProps) {
+  // モーダルを開く前のフォーカス先を保存し、閉じたときに戻す
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    return () => {
+      previousFocusRef.current?.focus();
+    };
+  }, []);
+
   // Esc キーで閉じる
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -24,16 +33,25 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") onClose();
-      }}
     >
-      <div className="relative w-full max-w-2xl mx-4 bg-[#f6f8fa] rounded-lg shadow-xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-modal-title"
+        className="relative w-full max-w-2xl mx-4 bg-[#f6f8fa] rounded-lg shadow-xl"
+      >
         {/* モーダルヘッダー */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#d0d7de]">
-          <h2 className="text-base font-semibold text-[#1f2328]">設定</h2>
+          <h2
+            id="settings-modal-title"
+            className="text-base font-semibold text-[#1f2328]"
+          >
+            設定
+          </h2>
           <button
             type="button"
+            // biome-ignore lint/a11y/noAutofocus: モーダル表示時のフォーカス初期位置として意図的に設定
+            autoFocus
             onClick={onClose}
             aria-label="設定を閉じる"
             className="text-[#636c76] hover:text-[#1f2328] transition-colors"
