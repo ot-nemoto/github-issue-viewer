@@ -2,12 +2,12 @@
 
 import { FilterBar, type FilterState } from "@/components/FilterBar/FilterBar";
 import { IssueList } from "@/components/IssueList/IssueList";
+import { SettingsModal } from "@/components/Settings/SettingsModal";
 import { Spinner } from "@/components/ui/Spinner";
 import { useGitHubData } from "@/lib/hooks/useGitHubData";
 import { getLabelColor } from "@/lib/labelColor";
 import type { GitHubItem } from "@/types";
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 function formatTime(ts: number): string {
   const d = new Date(ts);
@@ -46,6 +46,8 @@ function applyFilter(items: GitHubItem[], filter: FilterState): GitHubItem[] {
 export default function HomePage() {
   const { state, refresh } = useGitHubData();
   const [filter, setFilter] = useState<FilterState>(DEFAULT_FILTER);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const handleCloseSettings = useCallback(() => setSettingsOpen(false), []);
 
   const { filteredItems, availableLabels } = useMemo(() => {
     if (state.status !== "success") {
@@ -102,12 +104,13 @@ export default function HomePage() {
             )}
             更新
           </button>
-          <Link
-            href="/settings"
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
             className="px-3 py-1 text-sm bg-white border border-[#d0d7de] rounded-md text-[#1f2328] hover:bg-[#f6f8fa] transition-colors"
           >
             設定
-          </Link>
+          </button>
         </div>
       </header>
 
@@ -136,12 +139,13 @@ export default function HomePage() {
             <p className="text-sm text-[#636c76] mb-3">
               設定画面でリポジトリを追加してください
             </p>
-            <Link
-              href="/settings"
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
               className="text-sm text-[#0969da] hover:underline"
             >
               設定画面へ →
-            </Link>
+            </button>
           </div>
         )}
 
@@ -156,6 +160,7 @@ export default function HomePage() {
           </div>
         )}
       </main>
+      {settingsOpen && <SettingsModal onClose={handleCloseSettings} />}
     </div>
   );
 }
