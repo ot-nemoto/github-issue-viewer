@@ -33,12 +33,19 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
+      onKeyDown={(e) => {
+        if (
+          (e.key === "Enter" || e.key === " ") &&
+          e.target === e.currentTarget
+        )
+          onClose();
+      }}
     >
-      <div
-        role="dialog"
+      <dialog
+        open
         aria-modal="true"
         aria-labelledby="settings-modal-title"
-        className="relative w-full max-w-2xl mx-4 bg-[#f6f8fa] rounded-lg shadow-xl"
+        className="relative w-full max-w-2xl mx-4 bg-[#f6f8fa] rounded-lg shadow-xl p-0 border-0"
       >
         {/* モーダルヘッダー */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#d0d7de]">
@@ -73,7 +80,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
           <TokenForm />
           <RepoManager />
         </div>
-      </div>
+      </dialog>
     </div>
   );
 }
