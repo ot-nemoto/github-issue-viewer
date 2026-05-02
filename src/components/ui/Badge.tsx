@@ -27,12 +27,13 @@ export function Badge({ variant = "custom", color, children }: BadgeProps) {
   }
 
   const lum = getLuminance(color);
-  // 暗い色はそのまま、明るい色は 35% まで暗くしてテキストを読みやすくする
+  // 暗い色はそのまま、明るい色は暗くしてテキスト・ボーダーを読みやすくする
   const textColor = lum < 0.5 ? `#${color}` : darkenHex(color, 0.35);
+  const borderColor = lum < 0.5 ? `#${color}` : darkenHex(color, 0.55);
   const style = {
     backgroundColor: `#${color}33`,
     color: textColor,
-    borderColor: `#${color}66`,
+    borderColor,
   };
 
   return (
