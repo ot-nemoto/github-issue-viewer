@@ -58,8 +58,11 @@ export function RepoManager() {
   }
 
   return (
-    <section className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 id="repo-section-label" className="text-lg font-semibold mb-4">
+    <section className="bg-white rounded-md border border-[#d0d7de] p-5">
+      <h2
+        id="repo-section-label"
+        className="text-sm font-semibold text-[#1f2328] mb-3"
+      >
         リポジトリ
       </h2>
       <div className="flex gap-2">
@@ -75,28 +78,28 @@ export function RepoManager() {
           }}
           placeholder="owner/repo"
           aria-label="リポジトリ名 (owner/repo 形式)"
-          className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 py-1.5 border border-[#d0d7de] rounded-md text-sm text-[#1f2328] focus:outline-none focus:ring-2 focus:ring-[#0969da] focus:border-[#0969da]"
         />
         <button
           type="button"
           onClick={handleAdd}
           disabled={!input.trim() || adding}
-          className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-1.5 text-sm font-semibold bg-[#0969da] text-white rounded-md hover:bg-[#0860ca] disabled:opacity-50 disabled:cursor-not-allowed border border-black/10 transition-colors"
         >
           {adding ? "追加中..." : "追加"}
         </button>
       </div>
-      {error && <p className="mt-2 text-sm text-red-600">✗ {error}</p>}
+      {error && <p className="mt-2 text-sm text-[#cf222e]">✗ {error}</p>}
       {repos.length > 0 && (
-        <ul className="mt-4 divide-y divide-gray-100">
+        <ul className="mt-4 divide-y divide-[#d0d7de]">
           {repos.map((repo) => (
             <li key={repo} className="flex items-center justify-between py-2">
-              <span className="text-sm font-mono">{repo}</span>
+              <span className="text-sm font-mono text-[#1f2328]">{repo}</span>
               <button
                 type="button"
                 onClick={() => handleRemove(repo)}
                 aria-label={`${repo} を削除`}
-                className="text-sm text-red-600 hover:text-red-800"
+                className="text-sm text-[#cf222e] hover:text-[#a40e26] transition-colors"
               >
                 削除
               </button>
@@ -105,7 +108,7 @@ export function RepoManager() {
         </ul>
       )}
       {repos.length === 0 && (
-        <p className="mt-4 text-sm text-gray-400">
+        <p className="mt-4 text-sm text-[#636c76]">
           リポジトリが登録されていません
         </p>
       )}

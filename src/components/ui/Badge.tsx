@@ -28,12 +28,26 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
-function isDark(hex: string): boolean {
+function luminance(hex: string): number {
   const rgb = hexToRgb(hex);
-  if (!rgb) return false;
-  // Perceived luminance
-  const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
-  return luminance < 0.5;
+  if (!rgb) return 1;
+  return (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+}
+
+// 明るい色を暗くしてテキストに使う
+function darkenHex(hex: string, factor: number): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return `#${hex}`;
+  const r = Math.round(rgb.r * factor)
+    .toString(16)
+    .padStart(2, "0");
+  const g = Math.round(rgb.g * factor)
+    .toString(16)
+    .padStart(2, "0");
+  const b = Math.round(rgb.b * factor)
+    .toString(16)
+    .padStart(2, "0");
+  return `#${r}${g}${b}`;
 }
 
 export function Badge({ variant = "custom", color, children }: BadgeProps) {
@@ -46,10 +60,12 @@ export function Badge({ variant = "custom", color, children }: BadgeProps) {
     );
   }
 
-  const dark = isDark(color);
+  const lum = luminance(color);
+  // 暗い色はそのまま、明るい色は 35% まで暗くしてテキストを読みやすくする
+  const textColor = lum < 0.5 ? `#${color}` : darkenHex(color, 0.35);
   const style = {
     backgroundColor: `#${color}33`,
-    color: dark ? `#${color}` : `#${color}cc`,
+    color: textColor,
     borderColor: `#${color}66`,
   };
 

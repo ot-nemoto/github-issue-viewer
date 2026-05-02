@@ -4,6 +4,7 @@ import { FilterBar, type FilterState } from "@/components/FilterBar/FilterBar";
 import { IssueList } from "@/components/IssueList/IssueList";
 import { Spinner } from "@/components/ui/Spinner";
 import { useGitHubData } from "@/lib/hooks/useGitHubData";
+import { getLabelColor } from "@/lib/labelColor";
 import type { GitHubItem } from "@/types";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -14,26 +15,24 @@ function formatTime(ts: number): string {
 }
 
 const DEFAULT_FILTER: FilterState = {
-  type: "all",
-  status: "all",
-  repos: [],
+  types: ["issue", "pull_request"],
+  statuses: ["open"],
   labels: [],
 };
 
 function applyFilter(items: GitHubItem[], filter: FilterState): GitHubItem[] {
   return items.filter((item) => {
-    if (filter.type !== "all" && item.kind !== filter.type) return false;
+    // 未選択 = 該当なし
+    if (!filter.types.includes(item.kind)) return false;
 
-    if (filter.status !== "all") {
-      const isMerged = item.kind === "pull_request" && item.merged_at !== null;
-      if (filter.status === "open" && (item.state !== "open" || isMerged))
-        return false;
-      if (filter.status === "closed" && item.state !== "closed" && !isMerged)
-        return false;
-    }
-
-    if (filter.repos.length > 0 && !filter.repos.includes(item.repo))
-      return false;
+    if (filter.statuses.length === 0) return false;
+    const isMerged = item.kind === "pull_request" && item.merged_at !== null;
+    const matchesOpen =
+      filter.statuses.includes("open") && item.state === "open" && !isMerged;
+    const matchesClosed =
+      filter.statuses.includes("closed") &&
+      (item.state === "closed" || isMerged);
+    if (!matchesOpen && !matchesClosed) return false;
 
     if (filter.labels.length > 0) {
       const itemLabels = item.labels.map((l) => l.name);
@@ -48,29 +47,45 @@ export default function HomePage() {
   const { state, refresh } = useGitHubData();
   const [filter, setFilter] = useState<FilterState>(DEFAULT_FILTER);
 
-  const { filteredItems, availableRepos, availableLabels } = useMemo(() => {
+  const { filteredItems, availableLabels } = useMemo(() => {
     if (state.status !== "success") {
-      return { filteredItems: [], availableRepos: [], availableLabels: [] };
+      return { filteredItems: [], availableLabels: [] };
     }
     const allItems = state.data;
-    const reposSet = new Set(allItems.map((i) => i.repo));
-    const labelsSet = new Set(
-      allItems.flatMap((i) => i.labels.map((l) => l.name)),
-    );
+    // ラベル名を収集してアプリ固有の色を割り当てる
+    const labelNames = [
+      ...new Set(allItems.flatMap((i) => i.labels.map((l) => l.name))),
+    ].sort();
+    const availableLabels = labelNames.map((name) => ({
+      name,
+      color: getLabelColor(name),
+    }));
     return {
       filteredItems: applyFilter(allItems, filter),
-      availableRepos: [...reposSet].sort(),
-      availableLabels: [...labelsSet].sort(),
+      availableLabels,
     };
   }, [state, filter]);
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-gray-900">GitHub Issue Viewer</h1>
+    <div className="min-h-screen bg-[#f6f8fa]">
+      <header className="h-12 bg-[#24292f] flex items-center justify-between px-5">
+        <div className="flex items-center gap-2.5">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 16 16"
+            fill="rgba(255,255,255,0.9)"
+            aria-hidden="true"
+          >
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+          </svg>
+          <span className="text-[15px] font-semibold text-[#e6edf3] tracking-tight">
+            Issue Viewer
+          </span>
+        </div>
         <div className="flex items-center gap-3">
           {state.status === "success" && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-[#8b949e]">
               更新: {formatTime(state.fetchedAt)}
             </span>
           )}
@@ -78,7 +93,7 @@ export default function HomePage() {
             type="button"
             onClick={refresh}
             disabled={state.status === "loading"}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1 text-sm bg-white border border-[#d0d7de] rounded-md text-[#1f2328] hover:bg-[#f6f8fa] disabled:opacity-50 transition-colors"
           >
             {state.status === "loading" ? (
               <Spinner className="h-3.5 w-3.5" />
@@ -89,57 +104,58 @@ export default function HomePage() {
           </button>
           <Link
             href="/settings"
-            className="px-3 py-1.5 text-sm bg-gray-800 text-white rounded hover:bg-gray-700"
+            className="px-3 py-1 text-sm bg-white border border-[#d0d7de] rounded-md text-[#1f2328] hover:bg-[#f6f8fa] transition-colors"
           >
             設定
           </Link>
         </div>
-      </div>
+      </header>
 
-      {state.status === "loading" && (
-        <div className="flex justify-center items-center py-20">
-          <Spinner className="text-gray-400" />
-        </div>
-      )}
+      <main className="max-w-screen-xl mx-auto p-5 space-y-4">
+        {state.status === "loading" && (
+          <div className="flex justify-center items-center py-20">
+            <Spinner className="text-[#636c76]" />
+          </div>
+        )}
 
-      {state.status === "error" && (
-        <div className="py-10 text-center">
-          <p className="text-red-600 text-sm mb-3">{state.message}</p>
-          <button
-            type="button"
-            onClick={refresh}
-            className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            再試行
-          </button>
-        </div>
-      )}
+        {state.status === "error" && (
+          <div className="py-10 text-center">
+            <p className="text-sm text-[#cf222e] mb-3">{state.message}</p>
+            <button
+              type="button"
+              onClick={refresh}
+              className="px-4 py-1.5 text-sm bg-[#cf222e] text-white rounded-md hover:bg-[#a40e26] transition-colors"
+            >
+              再試行
+            </button>
+          </div>
+        )}
 
-      {state.status === "success" && !state.hasRepos && (
-        <div className="py-16 text-center">
-          <p className="text-gray-500 text-sm mb-3">
-            設定画面でリポジトリを追加してください
-          </p>
-          <Link
-            href="/settings"
-            className="text-sm text-blue-600 hover:underline"
-          >
-            設定画面へ →
-          </Link>
-        </div>
-      )}
+        {state.status === "success" && !state.hasRepos && (
+          <div className="py-16 text-center">
+            <p className="text-sm text-[#636c76] mb-3">
+              設定画面でリポジトリを追加してください
+            </p>
+            <Link
+              href="/settings"
+              className="text-sm text-[#0969da] hover:underline"
+            >
+              設定画面へ →
+            </Link>
+          </div>
+        )}
 
-      {state.status === "success" && state.hasRepos && (
-        <div className="flex flex-col gap-3">
-          <FilterBar
-            filter={filter}
-            availableRepos={availableRepos}
-            availableLabels={availableLabels}
-            onChange={setFilter}
-          />
-          <IssueList items={filteredItems} />
-        </div>
-      )}
-    </main>
+        {state.status === "success" && state.hasRepos && (
+          <div className="space-y-3">
+            <FilterBar
+              filter={filter}
+              availableLabels={availableLabels}
+              onChange={setFilter}
+            />
+            <IssueList items={filteredItems} />
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
