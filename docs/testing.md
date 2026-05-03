@@ -23,6 +23,9 @@
 | `lib/github/parser.ts` | `Closes #123`, `Fixes owner/repo#123` などのパターン抽出 |
 | `lib/storage/cache.ts` | キャッシュ保存・取得・TTL 期限切れ判定・クリア |
 | `lib/storage/settings.ts` | PAT・リポジトリリストの保存・取得・削除 |
+| `lib/labelColor.ts` | 同じラベル名は常に同じ色を返す、異なる名前は異なる色になる |
+| `lib/hooks/useGitHubData.ts` | リポジトリ未設定・データ取得・キャッシュ利用・手動更新・エラー処理 |
+| `lib/hooks/useSettings.ts` | 初期状態・トークン保存/削除・リポジトリ追加/削除 |
 
 ## 実行手順
 
@@ -47,4 +50,10 @@ src/lib/storage/cache.ts
 src/lib/storage/cache.test.ts
 src/lib/storage/settings.ts
 src/lib/storage/settings.test.ts
+src/lib/labelColor.ts
+src/lib/labelColor.test.ts
+src/lib/hooks/useGitHubData.ts
+src/lib/hooks/useGitHubData.test.ts
+src/lib/hooks/useSettings.ts
+src/lib/hooks/useSettings.test.ts
 ```
