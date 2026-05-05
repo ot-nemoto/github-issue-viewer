@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GitHubIssue, GitHubPullRequest, GitHubUser } from "../github/types";
+import type {
+  GitHubIssue,
+  GitHubPullRequest,
+  GitHubUser,
+} from "../github/types";
 import { useGitHubData } from "./useGitHubData";
 
 // --- fixtures ---
