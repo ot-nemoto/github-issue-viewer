@@ -27,13 +27,13 @@
   "files": {
     "includes": [
       "**",
-      "!node_modules/**",
-      "!.next/**",
-      "!out/**",
+      "!node_modules",
+      "!.next",
+      "!out",
       "!*.lock",
       "!next-env.d.ts",
       "!tsconfig.json",
-      "!.devcontainer/**",
+      "!.devcontainer",
       "!package-lock.json"
     ]
   }
