@@ -28,19 +28,15 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
   }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto py-10"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      onKeyDown={(e) => {
-        if (
-          (e.key === "Enter" || e.key === " ") &&
-          e.target === e.currentTarget
-        )
-          onClose();
-      }}
-    >
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-10">
+      {/* backdrop: ボタン要素にしてクリックで閉じる */}
+      <button
+        type="button"
+        aria-label="設定を閉じる"
+        className="fixed inset-0 bg-black/40 cursor-default"
+        onClick={onClose}
+        tabIndex={-1}
+      />
       <dialog
         open
         aria-modal="true"

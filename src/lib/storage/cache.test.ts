@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  DEFAULT_TTL,
   clearAllCache,
   clearCache,
+  DEFAULT_TTL,
   getCache,
   setCache,
 } from "./cache";

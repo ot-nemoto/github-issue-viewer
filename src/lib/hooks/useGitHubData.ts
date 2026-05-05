@@ -1,10 +1,10 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { getIssues, getPullRequests } from "@/lib/github/client";
 import { getCache, setCache } from "@/lib/storage/cache";
 import { getRepos, getToken } from "@/lib/storage/settings";
 import type { GitHubItem } from "@/types";
-import { useCallback, useEffect, useState } from "react";
 
 type State =
   | { status: "idle" }
