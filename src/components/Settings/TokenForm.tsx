@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { validateToken } from "@/lib/github/client";
 import { getToken, removeToken, setToken } from "@/lib/storage/settings";
-import { useEffect, useState } from "react";
 
 type ValidationState =
   | { status: "idle" }

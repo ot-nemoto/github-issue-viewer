@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useMemo, useState } from "react";
 import { FilterBar, type FilterState } from "@/components/FilterBar/FilterBar";
 import { IssueList } from "@/components/IssueList/IssueList";
 import { SettingsModal } from "@/components/Settings/SettingsModal";
@@ -7,7 +8,6 @@ import { Spinner } from "@/components/ui/Spinner";
 import { useGitHubData } from "@/lib/hooks/useGitHubData";
 import { getLabelColor } from "@/lib/labelColor";
 import type { GitHubItem } from "@/types";
-import { useCallback, useMemo, useState } from "react";
 
 function formatTime(ts: number): string {
   const d = new Date(ts);

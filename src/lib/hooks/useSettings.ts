@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import {
   addRepo,
   getRepos,
@@ -8,7 +9,6 @@ import {
   removeToken,
   setToken,
 } from "@/lib/storage/settings";
-import { useCallback, useEffect, useState } from "react";
 
 export function useSettings() {
   const [token, setTokenState] = useState<string | null>(null);

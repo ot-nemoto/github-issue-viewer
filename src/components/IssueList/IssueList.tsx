@@ -1,7 +1,7 @@
 "use client";
 
-import type { GitHubItem } from "@/types";
 import { useState } from "react";
+import type { GitHubItem } from "@/types";
 import { IssueItem } from "./IssueItem";
 
 type IssueListProps = {

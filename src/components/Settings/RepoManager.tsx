@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { getRepository } from "@/lib/github/client";
 import {
   addRepo,
@@ -7,7 +8,6 @@ import {
   getToken,
   removeRepo,
 } from "@/lib/storage/settings";
-import { useEffect, useState } from "react";
 
 export function RepoManager() {
   const [input, setInput] = useState("");
