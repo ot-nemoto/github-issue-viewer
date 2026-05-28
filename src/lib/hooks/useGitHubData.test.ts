@@ -169,6 +169,35 @@ describe("useGitHubData — データ取得", () => {
       expect(state.message).toContain("invalid-repo");
     }
   });
+
+  it("1つのリポジトリが失敗しても他のデータは表示される", async () => {
+    // "invalid-repo" は parseRepoIdentifier で失敗、"owner/repo" は正常取得
+    localStorage.setItem(
+      "giv:repos",
+      JSON.stringify(["invalid-repo", "owner/repo"]),
+    );
+    mockFetch([makeIssue(1, "2024-01-01T00:00:00Z")], []);
+    const { result } = renderHook(() => useGitHubData());
+    await waitFor(() => expect(result.current.state.status).toBe("success"));
+    const state = result.current.state;
+    if (state.status === "success") {
+      expect(state.data).toHaveLength(1);
+      expect(state.failedRepos).toHaveLength(1);
+      expect(state.failedRepos[0].repo).toBe("invalid-repo");
+    }
+  });
+
+  it("全リポジトリが失敗した場合は error 状態になる", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: "Not Found",
+      json: () => Promise.resolve({ message: "Not Found" }),
+      headers: { get: () => null },
+    } as unknown as Response);
+    const { result } = renderHook(() => useGitHubData());
+    await waitFor(() => expect(result.current.state.status).toBe("error"));
+  });
 });
 
 describe("useGitHubData — キャッシュ", () => {

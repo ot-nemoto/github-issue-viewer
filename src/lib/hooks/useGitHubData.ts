@@ -6,6 +6,8 @@ import { getCache, setCache } from "@/lib/storage/cache";
 import { getRepos, getToken } from "@/lib/storage/settings";
 import type { GitHubItem } from "@/types";
 
+type FailedRepo = { repo: string; message: string };
+
 type State =
   | { status: "idle" }
   | { status: "loading" }
@@ -14,6 +16,7 @@ type State =
       data: GitHubItem[];
       fetchedAt: number;
       hasRepos: boolean;
+      failedRepos: FailedRepo[];
     }
   | { status: "error"; message: string };
 
@@ -65,49 +68,58 @@ export function useGitHubData() {
         data: [],
         fetchedAt: Date.now(),
         hasRepos: false,
+        failedRepos: [],
       });
       return;
     }
 
     setState({ status: "loading" });
 
-    try {
-      const allItems: GitHubItem[] = [];
+    const allItems: GitHubItem[] = [];
+    const failedRepos: FailedRepo[] = [];
 
-      await Promise.all(
-        repos.map(async (repo) => {
-          const cacheKey = repo;
+    await Promise.all(
+      repos.map(async (repo) => {
+        const cacheKey = repo;
 
-          if (!forceRefresh) {
-            const cached = getCache<GitHubItem[]>(cacheKey);
-            if (cached) {
-              allItems.push(...cached);
-              return;
-            }
+        if (!forceRefresh) {
+          const cached = getCache<GitHubItem[]>(cacheKey);
+          if (cached) {
+            allItems.push(...cached);
+            return;
           }
+        }
 
+        try {
           const items = await fetchRepoItems(repo, token);
           setCache(cacheKey, items);
           allItems.push(...items);
-        }),
-      );
+        } catch (err) {
+          const message =
+            err instanceof Error ? err.message : "データの取得に失敗しました";
+          failedRepos.push({ repo, message });
+        }
+      }),
+    );
 
-      const sorted = allItems.sort(
-        (a, b) =>
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-      );
-
-      setState({
-        status: "success",
-        data: sorted,
-        fetchedAt: Date.now(),
-        hasRepos: true,
-      });
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "データの取得に失敗しました";
-      setState({ status: "error", message });
+    // 全リポジトリが失敗した場合のみ error 状態
+    if (failedRepos.length === repos.length) {
+      setState({ status: "error", message: failedRepos[0].message });
+      return;
     }
+
+    const sorted = allItems.sort(
+      (a, b) =>
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+    );
+
+    setState({
+      status: "success",
+      data: sorted,
+      fetchedAt: Date.now(),
+      hasRepos: true,
+      failedRepos,
+    });
   }, []);
 
   useEffect(() => {

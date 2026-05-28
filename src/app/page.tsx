@@ -151,6 +151,18 @@ export default function HomePage() {
 
         {state.status === "success" && state.hasRepos && (
           <div className="space-y-3">
+            {state.failedRepos.length > 0 && (
+              <div className="rounded-md border border-[#f9c513] bg-[#fff8c5] px-4 py-3 text-sm text-[#7d4e00]">
+                <p className="font-semibold mb-1">一部のリポジトリの取得に失敗しました</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  {state.failedRepos.map(({ repo, message }) => (
+                    <li key={repo}>
+                      <span className="font-mono">{repo}</span>: {message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <FilterBar
               filter={filter}
               availableLabels={availableLabels}
