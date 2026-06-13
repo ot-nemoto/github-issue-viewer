@@ -1,6 +1,6 @@
 {
   "name": "github-issue-viewer",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -19,8 +19,8 @@
     "@biomejs/biome": "^2.4.16",
     "@tailwindcss/postcss": "^4.3.0",
     "@testing-library/react": "^16.3.2",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.16",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.0.0",
     "cross-env": "^10.1.0",
     "jsdom": "^29.1.1",
