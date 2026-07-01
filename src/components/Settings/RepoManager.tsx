@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getRepository } from "@/lib/github/client";
 import { extractOwnerRepo } from "@/lib/github/parser";
 import {
@@ -34,8 +34,10 @@ export function RepoManager() {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const requestIdRef = useRef(0);
 
   const loadDetails = useCallback(async (repos: string[]) => {
+    const requestId = ++requestIdRef.current;
     setDetailsLoading(true);
     const token = getToken() ?? undefined;
     const results = await Promise.all(
@@ -49,6 +51,8 @@ export function RepoManager() {
         }
       }),
     );
+    // 古い呼び出しの結果が後から解決した場合は破棄し、最新の結果を上書きしないようにする
+    if (requestId !== requestIdRef.current) return;
     setDetails(sortByUpdatedAtDesc(results));
     setDetailsLoading(false);
   }, []);
@@ -92,6 +96,9 @@ export function RepoManager() {
 
   function handleRemove(repo: string) {
     removeRepo(repo);
+    // in-flight の loadDetails が削除後に解決してもこの変更を上書きしないようにする
+    requestIdRef.current++;
+    setDetailsLoading(false);
     setDetails((prev) => prev.filter((d) => d.repo !== repo));
   }
 
