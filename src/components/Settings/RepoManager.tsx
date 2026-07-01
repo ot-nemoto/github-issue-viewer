@@ -81,9 +81,14 @@ export function RepoManager() {
     setError(null);
     try {
       const token = getToken() ?? undefined;
-      await getRepository(owner, name, token);
+      const data = await getRepository(owner, name, token);
       addRepo(repo);
-      await loadDetails(getRepos());
+      // 取得済みのdataを使って1件追加するだけにし、登録済み分の再取得を避ける
+      requestIdRef.current++;
+      setDetailsLoading(false);
+      setDetails((prev) =>
+        sortByUpdatedAtDesc([...prev, { repo, updatedAt: data.updated_at }]),
+      );
       setInput("");
     } catch {
       setError(
