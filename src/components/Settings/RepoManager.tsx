@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getRepository } from "@/lib/github/client";
+import { extractOwnerRepo } from "@/lib/github/parser";
 import {
   addRepo,
   getRepos,
@@ -21,7 +22,7 @@ export function RepoManager() {
 
   async function handleAdd() {
     if (adding) return;
-    const repo = input.trim();
+    const repo = extractOwnerRepo(input);
     if (!repo) return;
 
     const parts = repo.split("/");
