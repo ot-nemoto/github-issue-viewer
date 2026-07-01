@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { formatDate } from "@/lib/format";
 import { getRepository } from "@/lib/github/client";
 import { extractOwnerRepo } from "@/lib/github/parser";
 import {
@@ -14,10 +15,6 @@ type RepoDetail = {
   repo: string;
   updatedAt: string | null;
 };
-
-function formatDate(iso: string): string {
-  return iso.slice(0, 10);
-}
 
 function sortByUpdatedAtDesc(details: RepoDetail[]): RepoDetail[] {
   return [...details].sort((a, b) => {
