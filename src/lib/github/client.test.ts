@@ -45,6 +45,7 @@ const mockRepo: GitHubRepository = {
   private: false,
   html_url: "https://github.com/testuser/test-repo",
   description: "A test repository",
+  updated_at: "2024-01-02T00:00:00Z",
 };
 
 const mockIssue: GitHubIssue = {

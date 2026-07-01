@@ -26,6 +26,7 @@ export type GitHubRepository = {
   private: boolean;
   html_url: string;
   description: string | null;
+  updated_at: string;
 };
 
 export type GitHubIssue = {

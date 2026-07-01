@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getRepository } from "@/lib/github/client";
 import { extractOwnerRepo } from "@/lib/github/parser";
 import {
@@ -10,15 +10,52 @@ import {
   removeRepo,
 } from "@/lib/storage/settings";
 
+type RepoDetail = {
+  repo: string;
+  updatedAt: string | null;
+};
+
+function formatDate(iso: string): string {
+  return iso.slice(0, 10);
+}
+
+function sortByUpdatedAtDesc(details: RepoDetail[]): RepoDetail[] {
+  return [...details].sort((a, b) => {
+    if (!a.updatedAt && !b.updatedAt) return 0;
+    if (!a.updatedAt) return 1;
+    if (!b.updatedAt) return -1;
+    return b.updatedAt.localeCompare(a.updatedAt);
+  });
+}
+
 export function RepoManager() {
   const [input, setInput] = useState("");
-  const [repos, setRepos] = useState<string[]>([]);
+  const [details, setDetails] = useState<RepoDetail[]>([]);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setRepos(getRepos());
+  const loadDetails = useCallback(async (repos: string[]) => {
+    setDetailsLoading(true);
+    const token = getToken() ?? undefined;
+    const results = await Promise.all(
+      repos.map(async (repo): Promise<RepoDetail> => {
+        const [owner, name] = repo.split("/");
+        try {
+          const data = await getRepository(owner, name, token);
+          return { repo, updatedAt: data.updated_at };
+        } catch {
+          return { repo, updatedAt: null };
+        }
+      }),
+    );
+    setDetails(sortByUpdatedAtDesc(results));
+    setDetailsLoading(false);
   }, []);
+
+  useEffect(() => {
+    loadDetails(getRepos());
+  }, [loadDetails]);
 
   async function handleAdd() {
     if (adding) return;
@@ -42,7 +79,7 @@ export function RepoManager() {
       const token = getToken() ?? undefined;
       await getRepository(owner, name, token);
       addRepo(repo);
-      setRepos(getRepos());
+      await loadDetails(getRepos());
       setInput("");
     } catch {
       setError(
@@ -55,7 +92,7 @@ export function RepoManager() {
 
   function handleRemove(repo: string) {
     removeRepo(repo);
-    setRepos(getRepos());
+    setDetails((prev) => prev.filter((d) => d.repo !== repo));
   }
 
   return (
@@ -91,24 +128,34 @@ export function RepoManager() {
         </button>
       </div>
       {error && <p className="mt-2 text-sm text-[#cf222e]">✗ {error}</p>}
-      {repos.length > 0 && (
+      {detailsLoading && (
+        <p className="mt-4 text-sm text-[#636c76]">読み込み中...</p>
+      )}
+      {!detailsLoading && details.length > 0 && (
         <ul className="mt-4 divide-y divide-[#d0d7de]">
-          {repos.map((repo) => (
+          {details.map(({ repo, updatedAt }) => (
             <li key={repo} className="flex items-center justify-between py-2">
               <span className="text-sm font-mono text-[#1f2328]">{repo}</span>
-              <button
-                type="button"
-                onClick={() => handleRemove(repo)}
-                aria-label={`${repo} を削除`}
-                className="text-sm text-[#cf222e] hover:text-[#a40e26] transition-colors"
-              >
-                削除
-              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-[#636c76]">
+                  {updatedAt
+                    ? `最終更新: ${formatDate(updatedAt)}`
+                    : "最終更新日を取得できません"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleRemove(repo)}
+                  aria-label={`${repo} を削除`}
+                  className="text-sm text-[#cf222e] hover:text-[#a40e26] transition-colors"
+                >
+                  削除
+                </button>
+              </div>
             </li>
           ))}
         </ul>
       )}
-      {repos.length === 0 && (
+      {!detailsLoading && details.length === 0 && (
         <p className="mt-4 text-sm text-[#636c76]">
           リポジトリが登録されていません
         </p>
