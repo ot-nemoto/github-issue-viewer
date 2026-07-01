@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseRelatedIssues } from "./parser";
+import { extractOwnerRepo, parseRelatedIssues } from "./parser";
 
 describe("parseRelatedIssues", () => {
   it("null は空配列を返す", () => {
@@ -64,5 +64,57 @@ describe("parseRelatedIssues", () => {
     expect(
       parseRelatedIssues("This note mentions unfixes #2 as plain text."),
     ).toEqual([]);
+  });
+});
+
+describe("extractOwnerRepo", () => {
+  it("owner/repo 形式はそのまま返す", () => {
+    expect(extractOwnerRepo("owner/repo")).toBe("owner/repo");
+  });
+
+  it("前後の空白を除去する", () => {
+    expect(extractOwnerRepo("  owner/repo  ")).toBe("owner/repo");
+  });
+
+  it("https://github.com/owner/repo からowner/repoを抽出する", () => {
+    expect(extractOwnerRepo("https://github.com/owner/repo")).toBe(
+      "owner/repo",
+    );
+  });
+
+  it("http://github.com/owner/repo からowner/repoを抽出する", () => {
+    expect(extractOwnerRepo("http://github.com/owner/repo")).toBe("owner/repo");
+  });
+
+  it("www付きのURLからowner/repoを抽出する", () => {
+    expect(extractOwnerRepo("https://www.github.com/owner/repo")).toBe(
+      "owner/repo",
+    );
+  });
+
+  it("プロトコルなしのgithub.com/owner/repoを抽出する", () => {
+    expect(extractOwnerRepo("github.com/owner/repo")).toBe("owner/repo");
+  });
+
+  it("末尾の.gitを除去する", () => {
+    expect(extractOwnerRepo("https://github.com/owner/repo.git")).toBe(
+      "owner/repo",
+    );
+  });
+
+  it("末尾の/issuesなど余分なパスを除去する", () => {
+    expect(extractOwnerRepo("https://github.com/owner/repo/issues")).toBe(
+      "owner/repo",
+    );
+  });
+
+  it("末尾の/を除去する", () => {
+    expect(extractOwnerRepo("https://github.com/owner/repo/")).toBe(
+      "owner/repo",
+    );
+  });
+
+  it("不正な形式はそのまま返す（既存バリデーションでエラーにする）", () => {
+    expect(extractOwnerRepo("not-a-valid-format")).toBe("not-a-valid-format");
   });
 });
