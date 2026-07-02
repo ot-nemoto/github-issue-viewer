@@ -42,7 +42,8 @@ export function getRepos(): string[] {
 export function addRepo(repo: string): void {
   try {
     const repos = getRepos();
-    if (!repos.includes(repo)) {
+    // GitHub の owner/repo は大文字小文字を区別しないため、既存表記があれば重複追加しない
+    if (!repos.some((r) => r.toLowerCase() === repo.toLowerCase())) {
       repos.push(repo);
       localStorage.setItem(REPOS_KEY, JSON.stringify(repos));
     }

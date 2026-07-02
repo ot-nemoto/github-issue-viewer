@@ -52,6 +52,12 @@ describe("getRepos / addRepo / removeRepo", () => {
     expect(getRepos()).toHaveLength(1);
   });
 
+  it("大文字小文字違いは同一リポジトリとして重複追加しない", () => {
+    addRepo("octocat/Hello-World");
+    addRepo("Octocat/hello-world");
+    expect(getRepos()).toEqual(["octocat/Hello-World"]);
+  });
+
   it("複数のリポジトリを追加できる", () => {
     addRepo("owner/repo1");
     addRepo("owner/repo2");
