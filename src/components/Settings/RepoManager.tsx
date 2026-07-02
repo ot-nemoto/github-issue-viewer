@@ -91,6 +91,8 @@ export function RepoManager() {
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("updatedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  // 登録件数は最終更新日の取得中でも正しく出せるよう getRepos() ベースで保持する
+  const [repoCount, setRepoCount] = useState(0);
   const requestIdRef = useRef(0);
 
   const sortedDetails = useMemo(
@@ -109,6 +111,7 @@ export function RepoManager() {
 
   const loadDetails = useCallback(async (repos: string[]) => {
     const requestId = ++requestIdRef.current;
+    setRepoCount(repos.length);
     setDetailsLoading(true);
     const token = getToken() ?? undefined;
     const results = await Promise.all(
@@ -167,6 +170,7 @@ export function RepoManager() {
       setDetails((prev) =>
         upsertDetail(prev, { repo, updatedAt: data.updated_at }),
       );
+      setRepoCount(getRepos().length);
       setInput("");
     } catch {
       setError(
@@ -182,6 +186,7 @@ export function RepoManager() {
     // in-flight の loadDetails は getRepos() で整合するため、削除は即時反映のみでよい
     setDetailsLoading(false);
     setDetails((prev) => prev.filter((d) => d.repo !== repo));
+    setRepoCount(getRepos().length);
   }
 
   return (
@@ -190,7 +195,8 @@ export function RepoManager() {
         id="repo-section-label"
         className="text-sm font-semibold text-[#1f2328] mb-3"
       >
-        リポジトリ
+        リポジトリ{" "}
+        <span className="font-normal text-[#636c76]">({repoCount})</span>
       </h2>
       <div className="flex gap-2">
         <input
