@@ -56,6 +56,33 @@ function upsertDetail(details: RepoDetail[], item: RepoDetail): RepoDetail[] {
     : [...details, item];
 }
 
+function SortHeaderButton({
+  label,
+  columnKey,
+  sortKey,
+  sortDirection,
+  onSort,
+}: {
+  label: string;
+  columnKey: SortKey;
+  sortKey: SortKey;
+  sortDirection: SortDirection;
+  onSort: (key: SortKey) => void;
+}) {
+  const active = sortKey === columnKey;
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(columnKey)}
+      aria-label={`${label}で並び替え${active ? `（現在: ${sortDirection === "asc" ? "昇順" : "降順"}）` : ""}`}
+      className="flex items-center gap-1 text-xs font-semibold text-[#636c76] hover:text-[#1f2328] transition-colors"
+    >
+      {label}
+      {active && <span aria-hidden>{sortDirection === "asc" ? "▲" : "▼"}</span>}
+    </button>
+  );
+}
+
 export function RepoManager() {
   const [input, setInput] = useState("");
   const [details, setDetails] = useState<RepoDetail[]>([]);
@@ -196,28 +223,20 @@ export function RepoManager() {
       {!detailsLoading && details.length > 0 && (
         <>
           <div className="flex items-center justify-between mt-4 px-1">
-            <button
-              type="button"
-              onClick={() => handleSortClick("name")}
-              aria-label={`リポジトリ名で並び替え${sortKey === "name" ? `（現在: ${sortDirection === "asc" ? "昇順" : "降順"}）` : ""}`}
-              className="flex items-center gap-1 text-xs font-semibold text-[#636c76] hover:text-[#1f2328] transition-colors"
-            >
-              リポジトリ名
-              {sortKey === "name" && (
-                <span aria-hidden>{sortDirection === "asc" ? "▲" : "▼"}</span>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSortClick("updatedAt")}
-              aria-label={`最終更新日で並び替え${sortKey === "updatedAt" ? `（現在: ${sortDirection === "asc" ? "昇順" : "降順"}）` : ""}`}
-              className="flex items-center gap-1 text-xs font-semibold text-[#636c76] hover:text-[#1f2328] transition-colors"
-            >
-              最終更新日
-              {sortKey === "updatedAt" && (
-                <span aria-hidden>{sortDirection === "asc" ? "▲" : "▼"}</span>
-              )}
-            </button>
+            <SortHeaderButton
+              label="リポジトリ名"
+              columnKey="name"
+              sortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSortClick}
+            />
+            <SortHeaderButton
+              label="最終更新日"
+              columnKey="updatedAt"
+              sortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSortClick}
+            />
           </div>
           <ul className="mt-2 max-h-[40vh] overflow-y-auto divide-y divide-[#d0d7de]">
             {sortedDetails.map(({ repo, updatedAt }) => (
