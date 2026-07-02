@@ -144,10 +144,10 @@ export function RepoManager() {
 
   async function handleAdd() {
     if (adding) return;
-    const repo = extractOwnerRepo(input);
-    if (!repo) return;
+    const parsed = extractOwnerRepo(input);
+    if (!parsed) return;
 
-    const parts = repo.split("/");
+    const parts = parsed.split("/");
     if (parts.length !== 2) {
       setError("owner/repo の形式で入力してください");
       return;
@@ -157,6 +157,8 @@ export function RepoManager() {
       setError("owner/repo の形式で入力してください");
       return;
     }
+    // trim 済みの owner/name から正規化した値を保存・表示に使う（空白混入を防ぐ）
+    const repo = `${owner}/${name}`;
 
     setAdding(true);
     setError(null);
