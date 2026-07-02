@@ -45,11 +45,13 @@ function sortDetails(
   return [...details].sort((a, b) => compareRepoDetails(a, b, key, direction));
 }
 
-// repo をキーに details へ追加または既存行の updatedAt を更新する（重複させない）
+// repo をキーに details へ追加または既存行の updatedAt を更新する（重複させない）。
+// GitHub の owner/repo は大文字小文字を区別しないため、既存表記を保持しつつ照合する。
 function upsertDetail(details: RepoDetail[], item: RepoDetail): RepoDetail[] {
-  return details.some((d) => d.repo === item.repo)
+  const key = item.repo.toLowerCase();
+  return details.some((d) => d.repo.toLowerCase() === key)
     ? details.map((d) =>
-        d.repo === item.repo ? { ...d, updatedAt: item.updatedAt } : d,
+        d.repo.toLowerCase() === key ? { ...d, updatedAt: item.updatedAt } : d,
       )
     : [...details, item];
 }
