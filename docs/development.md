@@ -26,18 +26,6 @@ npm run dev
 | `npm run lint` | Biome によるリント・フォーマットチェック |
 | `npm run test` | Vitest によるユニットテスト実行 |
 
-## CI
-
-`.github/workflows/ci.yml` は以下のタイミングで実行される。
-
-| トリガー | 実行 |
-|---------|------|
-| PR オープン（`opened` / `reopened`） | 自動実行 |
-| レビュー対応コミットのプッシュ（`synchronize`） | 自動実行しない |
-| 手動実行（`workflow_dispatch`） | いつでも実行可能 |
-
-`develop` / `master` に branch protection（必須ステータスチェック）は設定されていないため、CI 結果はマージのブロック要因にならない。**マージ前には GitHub Actions タブから手動でCIを再実行し、最終確認を行うこと。**
-
 ## デプロイ手順
 
 ### GitHub Pages
