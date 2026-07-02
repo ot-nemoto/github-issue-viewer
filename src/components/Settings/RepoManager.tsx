@@ -91,6 +91,8 @@ export function RepoManager() {
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("updatedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  // 登録件数は最終更新日の取得中でも正しく出せるよう getRepos() ベースで保持する
+  const [repoCount, setRepoCount] = useState(0);
   const requestIdRef = useRef(0);
 
   const sortedDetails = useMemo(
@@ -109,6 +111,7 @@ export function RepoManager() {
 
   const loadDetails = useCallback(async (repos: string[]) => {
     const requestId = ++requestIdRef.current;
+    setRepoCount(repos.length);
     setDetailsLoading(true);
     const token = getToken() ?? undefined;
     const results = await Promise.all(
@@ -141,10 +144,10 @@ export function RepoManager() {
 
   async function handleAdd() {
     if (adding) return;
-    const repo = extractOwnerRepo(input);
-    if (!repo) return;
+    const parsed = extractOwnerRepo(input);
+    if (!parsed) return;
 
-    const parts = repo.split("/");
+    const parts = parsed.split("/");
     if (parts.length !== 2) {
       setError("owner/repo の形式で入力してください");
       return;
@@ -154,6 +157,8 @@ export function RepoManager() {
       setError("owner/repo の形式で入力してください");
       return;
     }
+    // trim 済みの owner/name から正規化した値を保存・表示に使う（空白混入を防ぐ）
+    const repo = `${owner}/${name}`;
 
     setAdding(true);
     setError(null);
@@ -167,6 +172,7 @@ export function RepoManager() {
       setDetails((prev) =>
         upsertDetail(prev, { repo, updatedAt: data.updated_at }),
       );
+      setRepoCount(getRepos().length);
       setInput("");
     } catch {
       setError(
@@ -182,6 +188,7 @@ export function RepoManager() {
     // in-flight の loadDetails は getRepos() で整合するため、削除は即時反映のみでよい
     setDetailsLoading(false);
     setDetails((prev) => prev.filter((d) => d.repo !== repo));
+    setRepoCount(getRepos().length);
   }
 
   return (
@@ -190,7 +197,8 @@ export function RepoManager() {
         id="repo-section-label"
         className="text-sm font-semibold text-[#1f2328] mb-3"
       >
-        リポジトリ
+        リポジトリ{" "}
+        <span className="font-normal text-[#636c76]">({repoCount})</span>
       </h2>
       <div className="flex gap-2">
         <input
