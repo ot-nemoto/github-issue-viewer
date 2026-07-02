@@ -1,13 +1,10 @@
+import { formatDate } from "@/lib/format";
 import { parseRelatedIssues } from "@/lib/github/parser";
 import { getLabelColor } from "@/lib/labelColor";
 import type { GitHubItem } from "@/types";
 import { Badge } from "../ui/Badge";
 
 const MAX_LABELS = 3;
-
-function formatDate(iso: string): string {
-  return iso.slice(0, 10);
-}
 
 function IssueIcon({ item }: { item: GitHubItem }) {
   if (item.kind === "pull_request") {

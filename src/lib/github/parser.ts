@@ -10,3 +10,15 @@ export function parseRelatedIssues(body: string | null): number[] {
   }
   return [...numbers];
 }
+
+// https://github.com/owner/repo (.git 付き、/issues 等のパス付きを含む) から owner/repo を抽出
+const GITHUB_URL_RE =
+  /^(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+?)(?:\.git)?(?:\/.*)?\/?$/i;
+
+export function extractOwnerRepo(input: string): string {
+  const trimmed = input.trim();
+  const match = trimmed.match(GITHUB_URL_RE);
+  if (!match) return trimmed;
+  const [, owner, name] = match;
+  return `${owner}/${name}`;
+}

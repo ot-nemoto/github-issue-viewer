@@ -2,9 +2,11 @@ name: CI
 
 on:
   pull_request:
+    types: [opened, reopened]
     branches:
       - develop
       - master
+  workflow_dispatch:
 
 jobs:
   test:
