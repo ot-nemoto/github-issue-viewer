@@ -42,11 +42,10 @@ npm run dev
 
 ### GitHub Pages
 
-`develop` ブランチへの push または `workflow_dispatch` で自動デプロイされる。
+`develop` ブランチへの push または `workflow_dispatch` で自動デプロイされる。`deploy-github-pages.yml` は `ci.yml` に依存しておらず、CI の成否とは無関係に実行される。
 
 ```
 develop ブランチへ push
-  → CI（lint + test）パス
   → build:static（./out 生成）
   → GitHub Pages デプロイ
 ```
