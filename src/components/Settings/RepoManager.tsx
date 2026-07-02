@@ -45,6 +45,15 @@ function sortDetails(
   return [...details].sort((a, b) => compareRepoDetails(a, b, key, direction));
 }
 
+// repo をキーに details へ追加または既存行の updatedAt を更新する（重複させない）
+function upsertDetail(details: RepoDetail[], item: RepoDetail): RepoDetail[] {
+  return details.some((d) => d.repo === item.repo)
+    ? details.map((d) =>
+        d.repo === item.repo ? { ...d, updatedAt: item.updatedAt } : d,
+      )
+    : [...details, item];
+}
+
 export function RepoManager() {
   const [input, setInput] = useState("");
   const [details, setDetails] = useState<RepoDetail[]>([]);
@@ -120,11 +129,7 @@ export function RepoManager() {
       requestIdRef.current++;
       setDetailsLoading(false);
       setDetails((prev) =>
-        prev.some((d) => d.repo === repo)
-          ? prev.map((d) =>
-              d.repo === repo ? { ...d, updatedAt: data.updated_at } : d,
-            )
-          : [...prev, { repo, updatedAt: data.updated_at }],
+        upsertDetail(prev, { repo, updatedAt: data.updated_at }),
       );
       setInput("");
     } catch {
