@@ -93,9 +93,16 @@ export function RepoManager() {
         }
       }),
     );
-    // 古い呼び出しの結果が後から解決した場合は破棄し、最新の結果を上書きしないようにする
+    // 新しい loadDetails 呼び出しに追い抜かれていた場合のみ破棄する
     if (requestId !== requestIdRef.current) return;
-    setDetails(results);
+    // 取得中に追加/削除された分と整合させ、現在の登録リポジトリのみを残す
+    // （取得済み結果を丸ごと破棄せず、ローカルの追加分を保持する）
+    const current = new Set(getRepos());
+    setDetails((prev) => {
+      const byRepo = new Map(prev.map((d) => [d.repo, d]));
+      for (const r of results) byRepo.set(r.repo, r);
+      return [...byRepo.values()].filter((d) => current.has(d.repo));
+    });
     setDetailsLoading(false);
   }, []);
 
@@ -125,8 +132,8 @@ export function RepoManager() {
       const token = getToken() ?? undefined;
       const data = await getRepository(owner, name, token);
       addRepo(repo);
-      // 取得済みのdataを使って1件追加・更新するだけにし、登録済み分の再取得を避ける
-      requestIdRef.current++;
+      // 取得済みのdataを使って1件追加・更新するだけにし、登録済み分の再取得を避ける。
+      // in-flight の loadDetails は getRepos() と整合してマージするため、無効化は不要。
       setDetailsLoading(false);
       setDetails((prev) =>
         upsertDetail(prev, { repo, updatedAt: data.updated_at }),
@@ -143,8 +150,7 @@ export function RepoManager() {
 
   function handleRemove(repo: string) {
     removeRepo(repo);
-    // in-flight の loadDetails が削除後に解決してもこの変更を上書きしないようにする
-    requestIdRef.current++;
+    // in-flight の loadDetails は getRepos() で整合するため、削除は即時反映のみでよい
     setDetailsLoading(false);
     setDetails((prev) => prev.filter((d) => d.repo !== repo));
   }
