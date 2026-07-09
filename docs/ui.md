@@ -131,19 +131,6 @@ graph TD
 | リポジトリ一覧表示 | 各リポジトリに最終更新日（`YYYY-MM-DD`）を表示。「リポジトリ名」「最終更新日」の列ヘッダーをクリックしてソート基準を切り替え、同じヘッダーを再クリックすると昇順/降順がトグルする（▲/▼で現在の状態を表示）。デフォルトは最終更新日の降順。一覧はビューポート高さの40%（`40vh`）を超えるとスクロール表示 |
 | リポジトリ最終更新日取得エラー | 該当行に「最終更新日を取得できません」を表示（他の行の表示・一覧全体には影響しない） |
 
-## コンポーネント一覧
-
-| コンポーネント | 場所 | 説明 |
-|--------------|------|------|
-| `IssueList` | `components/IssueList/IssueList.tsx` | リポジトリグループ表示・折りたたみ管理 |
-| `IssueItem` | `components/IssueList/IssueItem.tsx` | 1件分の表示行 |
-| `FilterBar` | `components/FilterBar/FilterBar.tsx` | タイプ・ステータス・ラベルフィルタ |
-| `SettingsModal` | `components/Settings/SettingsModal.tsx` | 設定モーダル（開閉・Esc 対応） |
-| `TokenForm` | `components/Settings/TokenForm.tsx` | PAT 入力・検証・削除 |
-| `RepoManager` | `components/Settings/RepoManager.tsx` | リポジトリ追加・削除 |
-| `Badge` | `components/ui/Badge.tsx` | ラベル・ステータス表示用バッジ |
-| `Spinner` | `components/ui/Spinner.tsx` | ローディングインジケータ |
-
 ## UI 規約
 
 ### カラーパレット（GitHub UI トークン準拠）
