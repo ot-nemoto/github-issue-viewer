@@ -111,8 +111,16 @@ type CacheEntry = {
 - PR: `GET /repos/{owner}/{repo}/pulls?state=all&per_page=100&page={n}`
 - ユーザー検証: `GET /user`
 - 認証: `Authorization: Bearer {token}` ヘッダー
+- PAT 必要スコープ: `repo`（プライベートリポジトリ読み取り）、`read:org`（組織リポジトリ読み取り）
 - ページネーション: `Link` ヘッダーを解析して全件取得
-- レート制限: キャッシュにより不要なリクエストを削減
+- レート制限: キャッシュにより不要なリクエストを削減（認証済み: 5,000 req/hour）
+
+### 関連 Issue 抽出
+
+PR 本文から以下のパターンを抽出して関連 Issue として表示する（大文字小文字不問）。
+
+- `Closes #123` / `Fixes #123` / `Resolves #123`
+- `Closes owner/repo#123` 形式（別リポジトリ参照）
 
 ## バージョン固有の仕様・既知注意点
 
