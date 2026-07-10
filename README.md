@@ -4,9 +4,10 @@
 
 ## 機能
 
-- 複数リポジトリの Issue / PR を統合リスト表示
+- 複数リポジトリの Issue / PR を統合リスト表示（リポジトリごとにグループ化・折りたたみ対応）
 - Personal Access Token（PAT）によるプライベートリポジトリ対応
-- タイプ・ステータス・リポジトリ・ラベルによるフィルタリング
+- 対象リポジトリの動的な追加・削除（ブラウザ保存）
+- タイプ・ステータス・ラベルによるフィルタリング（複数選択可）
 - API レスポンスのローカルキャッシュ（デフォルト5分、手動更新可）
 - PR 本文からの関連 Issue 自動抽出
 
@@ -15,13 +16,9 @@
 | ドキュメント | 内容 |
 |------------|------|
 | [docs/product.md](docs/product.md) | プロダクト目的・対象ユーザー・成功指標 |
-| [docs/requirements.md](docs/requirements.md) | 機能要件・非機能要件 |
-| [docs/architecture.md](docs/architecture.md) | 技術スタック・ディレクトリ構成・実装方針 |
-| [docs/ui.md](docs/ui.md) | 画面仕様・遷移図・コンポーネント一覧 |
+| [docs/architecture.md](docs/architecture.md) | 技術スタック・実装方針・GitHub API 利用方針 |
+| [docs/ui.md](docs/ui.md) | 画面仕様・遷移図・UI 規約 |
 | [docs/development.md](docs/development.md) | ローカルセットアップ・デプロイ手順 |
-| [docs/testing.md](docs/testing.md) | テスト方針・カバレッジ規約 |
-| [docs/e2e-scenarios.md](docs/e2e-scenarios.md) | 手動動作確認シナリオ |
-| [docs/tasks.md](docs/tasks.md) | フェーズ別タスク一覧 |
 
 ## クイックスタート
 
