@@ -9,7 +9,11 @@ on:
 
 jobs:
   bump:
-    if: github.event.label.name == 'bump:patch' || github.event.label.name == 'bump:minor'
+    # fork PR ではブランチが base 側に無く GITHUB_TOKEN も read-only のため push に失敗する。
+    # 同一リポジトリの PR に限定し、fork PR は（失敗させず）スキップする。
+    if: >
+      (github.event.label.name == 'bump:patch' || github.event.label.name == 'bump:minor')
+      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -27,7 +31,8 @@ jobs:
         id: bump
         run: |
           TYPE=${{ github.event.label.name == 'bump:minor' && 'minor' || 'patch' }}
-          npm version $TYPE --no-git-tag-version
+          # --ignore-scripts: PR 側 package.json の preversion/version/postversion を実行させない（サプライチェーン対策）
+          npm version $TYPE --no-git-tag-version --ignore-scripts
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
