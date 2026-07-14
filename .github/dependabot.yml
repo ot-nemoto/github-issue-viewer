@@ -11,6 +11,11 @@ updates:
         dependency-type: production
       development-dependencies:
         dependency-type: development
+    ignore:
+      # TypeScript 7 はネイティブ版（Go 実装）で Next.js 16 の build と非互換。
+      # Next.js がネイティブ版に対応するまでメジャー更新を保留する。
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: devcontainers
     directory: /
