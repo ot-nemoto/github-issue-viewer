@@ -34,8 +34,12 @@ jobs:
         if: steps.prisma_check.outputs.exists == 'true'
         run: npx prisma generate
 
-      - name: Lint
-        run: npm run lint
+      # biome ci は lint とフォーマットを書き換えずに検査する。
+      # package.json の script に依存させない（リポジトリ側の lint 定義がぶれても検査が止まらないため）。
+      # --no: ローカル node_modules の biome を強制し、未導入なら明示的に失敗させる
+      #       （付けないと未導入時にレジストリから最新版を黙って取得し、バージョンdrift・供給網リスクになる）
+      - name: Lint & Format check
+        run: npx --no biome ci .
 
       - name: Unit test
         run: npm run test
