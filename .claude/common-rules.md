@@ -155,6 +155,21 @@
 - **内部コードやフレームワークが保証している箇所に防御的コード（不要な null チェック・型ガード）を足さない**
 - 言語・ツール・フォーマッタなどプロジェクト固有の選択は `docs/architecture.md` を参照
 
+### Lint / Format（Biome を使うリポジトリ）
+
+Biome を採用するリポジトリは、npm scripts を以下に揃える。
+
+| script | 定義 | 内容 |
+|--------|------|------|
+| `lint` | `biome check .` | 検査のみ（lint + format + assist/import 整列）・書き換えなし |
+| `format` | `biome check --write .` | 上記を自動修正 |
+
+- **`biome lint` / `biome format` 単体は使わない**。`biome format` は assist（`organizeImports`）を含まないため、`lint` が検出する import 並べ替えを `format` で直せない非対称が生じる。両者を `biome check` に揃え、「`format` してから `lint` が必ず通る」を保証する。
+- `check` / `lint:fix` など `format` と同一内容の別名 script は作らない。
+- CI（`.github/workflows/ci.yml`）はワークフローから `npx --no biome ci .` を直接実行し、`package.json` の script に依存しない。
+- **`biome.json` の `$schema` は `@biomejs/biome` の実体バージョンに合わせる**。バージョン更新時は `$schema` も追従する（実体とズレると設定スキーマ不一致の通知が出る）。
+- ビルド生成物（`.next/` / `dist/` / `out/` / `coverage/` 等）・静的アセット（`public/` 等）は検査対象から除外する。除外は `.gitignore` 連携（`vcs.useIgnoreFile: true`）を基本とし、`biome.json` に直書きする場合のフォルダ除外は **`"!**/dir"`** 形式を使う（`"!**/dir/**"` は「フォルダ除外の誤用」警告になる）。
+
 ---
 
 ## セキュリティルール
