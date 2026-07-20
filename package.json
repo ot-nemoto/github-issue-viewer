@@ -1,6 +1,6 @@
 {
   "name": "github-issue-viewer",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "private": true,
   "scripts": {
     "prepare": "biome migrate --write",
@@ -9,6 +9,7 @@
     "build:static": "cross-env BUILD_MODE=static next build",
     "start": "next start",
     "lint": "biome check .",
+    "format": "biome check --write .",
     "test": "vitest run"
   },
   "dependencies": {
