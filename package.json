@@ -9,6 +9,7 @@
     "build:static": "cross-env BUILD_MODE=static next build",
     "start": "next start",
     "lint": "biome check .",
+    "format": "biome check --write .",
     "test": "vitest run"
   },
   "dependencies": {
