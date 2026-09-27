@@ -167,7 +167,7 @@ Biome を採用するリポジトリは、npm scripts を以下に揃える。
 - **`biome lint` / `biome format` 単体は使わない**。`biome format` は assist（`organizeImports`）を含まないため、`lint` が検出する import 並べ替えを `format` で直せない非対称が生じる。両者を `biome check` に揃え、「`format` してから `lint` が必ず通る」を保証する。
 - `check` / `lint:fix` など `format` と同一内容の別名 script は作らない。
 - CI（`.github/workflows/ci.yml`）はワークフローから `npx --no biome ci .` を直接実行し、`package.json` の script に依存しない。
-- **`biome.json` の `$schema` は `@biomejs/biome` の実体バージョンに合わせる**。バージョン更新時は `$schema` も追従する（実体とズレると設定スキーマ不一致の通知が出る）。
+- **`biome.json` の `$schema` はインストール済みのスキーマファイル（`./node_modules/@biomejs/biome/configuration_schema.json`）を参照する**。バージョン番号入りの URL（`https://biomejs.dev/schemas/x.y.z/schema.json`）は使わない。Dependabot は `biome.json` を更新しないため、URL の形だと Biome の更新のたびに `$schema` が実体からずれ、そのずれは `biome ci` ではお知らせ扱いで CI でも検出されない。
 - ビルド生成物（`.next/` / `dist/` / `out/` / `coverage/` 等）・静的アセット（`public/` 等）は検査対象から除外する。除外は `.gitignore` 連携（`vcs.useIgnoreFile: true`）を基本とし、`biome.json` に直書きする場合のフォルダ除外は **`"!**/dir"`** 形式を使う（`"!**/dir/**"` は「フォルダ除外の誤用」警告になる）。
 
 ---
