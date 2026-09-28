@@ -41,5 +41,12 @@ jobs:
       - name: Lint & Format check
         run: npx --no biome ci .
 
+      # 型チェック。vitest は型を検査しないため、型エラーは next build 等のデプロイ時まで表面化しない。
+      # Prisma 生成クライアントを参照するリポジトリがあるため、Generate Prisma client より後に置く。
+      # tsc -b: tsconfig の references（Vite 系の tsconfig.app.json 等）もたどって検査する。
+      #         ルートが "files": [] の構成では tsc --noEmit だと 0 ファイル検査で素通りするため -b を使う。
+      - name: Type check
+        run: npx --no tsc -b
+
       - name: Unit test
         run: npm run test
