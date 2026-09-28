@@ -45,8 +45,9 @@ jobs:
       # Prisma 生成クライアントを参照するリポジトリがあるため、Generate Prisma client より後に置く。
       # tsc -b: tsconfig の references（Vite 系の tsconfig.app.json 等）もたどって検査する。
       #         ルートが "files": [] の構成では tsc --noEmit だと 0 ファイル検査で素通りするため -b を使う。
+      # --: これがないと npm が -b を自分の config（--b）として解釈し、tsc に渡らない（プレーンモードで素通りする）。
       - name: Type check
-        run: npx --no tsc -b
+        run: npx --no -- tsc -b
 
       - name: Unit test
         run: npm run test
