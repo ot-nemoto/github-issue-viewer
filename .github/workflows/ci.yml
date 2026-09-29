@@ -41,5 +41,31 @@ jobs:
       - name: Lint & Format check
         run: npx --no biome ci .
 
+      # 型チェック。vitest は型を検査しないため、型エラーは next build 等のデプロイ時まで表面化しない。
+      # Prisma 生成クライアントを参照するリポジトリがあるため、Generate Prisma client より後に置く。
+      # tsc -b: tsconfig の references（Vite 系の tsconfig.app.json 等）もたどって検査する。
+      #         ルートが "files": [] の構成では tsc --noEmit だと 0 ファイル検査で素通りするため -b を使う。
+      # --: これがないと npm が -b を自分の config（--b）として解釈し、tsc に渡らない（プレーンモードで素通りする）。
+      - name: Type check
+        run: npx --no -- tsc -b
+
       - name: Unit test
         run: npm run test
+
+      # deploy ワークフローが実行するビルドを PR 時点で前倒しし、型エラー以外のビルド破壊
+      # （依存解決・バンドラ設定の破壊など）を検知する。時間がかかるため最後に置く。
+      # 判定は配布された deploy ワークフローの有無で行い、プロファイルと一致させる。
+      # コマンドは各 deploy ワークフロー（deploy-*.yml）の Build ステップと揃えること。
+      # build（vercel-app / render-app）はプロバイダ側で環境変数を前提に実行されるため対象外。
+      - name: Detect deploy build
+        id: deploy_build
+        run: |
+          if [ -f .github/workflows/deploy-cloudflare-workers.yml ]; then
+            echo "script=pages:build" >> "$GITHUB_OUTPUT"
+          elif [ -f .github/workflows/deploy-github-pages.yml ]; then
+            echo "script=build:static" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build check
+        if: steps.deploy_build.outputs.script != ''
+        run: npm run ${{ steps.deploy_build.outputs.script }}
