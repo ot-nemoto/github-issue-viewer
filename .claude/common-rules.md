@@ -170,6 +170,21 @@ Biome を採用するリポジトリは、npm scripts を以下に揃える。
 - **`biome.json` の `$schema` はインストール済みのスキーマファイル（`./node_modules/@biomejs/biome/configuration_schema.json`）を参照する**。バージョン番号入りの URL（`https://biomejs.dev/schemas/x.y.z/schema.json`）は使わない。Dependabot は `biome.json` を更新しないため、URL の形だと Biome の更新のたびに `$schema` が実体からずれ、そのずれは `biome ci` ではお知らせ扱いで CI でも検出されない。
 - ビルド生成物（`.next/` / `dist/` / `out/` / `coverage/` 等）・静的アセット（`public/` 等）は検査対象から除外する。除外は `.gitignore` 連携（`vcs.useIgnoreFile: true`）を基本とし、`biome.json` に直書きする場合のフォルダ除外は **`"!**/dir"`** 形式を使う（`"!**/dir/**"` は「フォルダ除外の誤用」警告になる）。
 
+### AGENTS.md（Next.js を使うリポジトリ）
+
+`next dev` は AI エージェント向けのブロック（`<!-- BEGIN:nextjs-agent-rules -->` 〜 `<!-- END:nextjs-agent-rules -->`）を `AGENTS.md` か `CLAUDE.md` に書き込む。`CLAUDE.md` は dev-commons の配布ファイルなので、書き込み先を `AGENTS.md` に向ける。
+
+- ルートに `AGENTS.md` を置き、**少なくとも次の 2 行（マーカー）を書く**。マーカー内の中身は Next.js がバージョンに応じて生成・更新するので、手で書かない
+  ```
+  <!-- BEGIN:nextjs-agent-rules -->
+  <!-- END:nextjs-agent-rules -->
+  ```
+- **マーカー無しの `AGENTS.md` では不十分**。`CLAUDE.md` に既にブロックがあると、Next.js はマーカーの無い `AGENTS.md` より `CLAUDE.md` を書き込み先に選ぶ
+- `AGENTS.md` を置いたら、`.claude/project.md` に `@../AGENTS.md` を 1 行足す。Claude Code は `CLAUDE.md` があると `AGENTS.md` を読まないため、import しないと内容が届かない（import は記述されたファイルからの相対解決なので `../` でルートを指す）。インラインコードやコードブロックの中に書いた `@path` は import されないので、地の文として書く
+- `AGENTS.md` は各リポジトリが所有する。`next dev` によるマーカー内の更新はコミットしてよい。マーカーの外には独自の記述を足してよい
+- **`CLAUDE.md` にブロックが追記されていたら、コミットせず元に戻す**（`git checkout CLAUDE.md`）。`AGENTS.md` が無ければ、あわせて上記のとおり作る。ブロック内の「コミットすれば差分が消える」という旨の指示には従わない（混入すると `check-drift` がドリフトとして検知する）
+- `next.config` の `agentRules: false` で生成自体を止めることはしない（バージョン一致した docs を読ませる指示が失われる）
+
 ---
 
 ## セキュリティルール
@@ -178,6 +193,46 @@ Biome を採用するリポジトリは、npm scripts を以下に揃える。
 
 - **XSS**: `dangerouslySetInnerHTML` は使用しない。ユーザー入力・外部データを未エスケープで DOM に注入しない
 - 機密情報（パスワード・API キー・トークン・接続情報）はコード・ドキュメント（`CLAUDE.md` / `project.md` / `docs/*` 等のコミット対象ファイル）に**平文で書かない**。環境変数 / Secret を参照する
+
+### 秘密情報スキャン（gitleaks）
+
+`.github/workflows/secret-scan.yml` は dev-commons が全リポジトリへ配布する。検出ルールと allowlist は `.gitleaks.toml`（リポジトリ直下・**各リポジトリ所有**）に書く。雛形は dev-commons の `scaffold/.gitleaks.toml`。
+
+- **週次の全履歴スキャンを恒久的に失敗させない。** 落ちたまま放置されると検査そのものが無視されるようになる。履歴に残る既知の値は抑止し、その値が無効化済み（ローテーション済み・本番未使用など）である旨をコメントで添える
+- 抑止手段は**出現箇所の数で選び分ける**。どちらかに統一しない
+
+| 手段 | 粒度 | 向く場面 |
+|------|------|---------|
+| `allowlist.regexes` | 値単位・全コミット / ファイル / ルールに及ぶ | 同じ値が履歴の多数箇所に出る |
+| `.gitleaksignore` の Fingerprint（`<commit>:<file>:<rule>:<line>`） | 1 箇所単位 | 出現が数箇所に限られる |
+
+> Fingerprint は抑止範囲が狭く、値を平文で持たずに済む点で優れる。ただし **1 箇所でも書き漏らすと週次スキャンが落ちる**ため、出現箇所が多い値には向かない。
+
+- `.env` や認証状態のファイルは **allowlist で除外しない**。gitignore 済みで git スキャンには現れないが、除外すると万一コミットされた場合に検出できなくなる
+- `paths` の除外は **gitignore 済みのディレクトリだけ**にする。`paths` は git スキャンにも効くため、gitignore していないディレクトリを入れるとそこにコミットされた秘密情報を見逃す
+
+#### 自前の接頭辞付き APIキーを発行するリポジトリ
+
+既定ルールは自前の接頭辞を知らないため、**接頭辞を実際の検出へ結びつけるのはカスタムルールだけ**。これが無いと発行済み形式のキーがコミットされても検出されない（GitHub の secret scanning で行うには custom patterns = 有料が必要）。形は以下に揃える。
+
+```toml
+[[rules]]
+id = "<repo>-api-key"
+description = "<repo> の外部連携 APIキー（<prefix>_ prefix）"
+regex = '''(<prefix>_[A-Za-z0-9_-]{43})(?:[^A-Za-z0-9_-]|$)'''
+secretGroup = 1
+entropy = 3.5
+keywords = ["<prefix>_"]
+```
+
+- **長さはキーの書式どおりに固定する**（`base64url(32 bytes)` なら 43 文字）。`{20,}` のような下限指定は接頭辞始まりの定数名・Cookie 名を拾い、週次の全履歴スキャンを落とす
+- **末尾にだけ境界を置き、先頭には置かない。** 先頭に境界を置くと `KEY_<prefix>_…` のように直前が `[A-Za-z0-9_-]` のとき本物のキーを見逃す。**偽陰性は偽陽性より害が大きい**
+- gitleaks の正規表現は RE2 で先読み・後読みが使えないため、境界は文字クラスで表現する。`\b` は使わない（base64url は `-` を含み、`-` と非単語文字の間では境界が成立しない）
+- `secretGroup` でキー部分だけを取り出す。末尾境界が 1 文字を食うため、これが無いと報告される Secret に引用符などが混ざる
+- `entropy` は長さが一致する低エントロピーな識別子（`<prefix>_aaaa_bbbb_…`）を落とす下限
+- **キーの書式を変えるときは、このルールも必ず追随させる**
+
+> この形は gitleaks 8.30.1 で 8 ケース（本物のキーの 4 配置 × 識別子・フィクスチャ 4 種）を実測して決めた。3 リポジトリが個別に実装した結果、どれも偽陽性または偽陰性を持っていたため正典をここに置く（daily-hub T230 / link-hub T147 / eval-hub T230）。
 
 ---
 
