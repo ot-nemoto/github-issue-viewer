@@ -172,18 +172,13 @@ Biome を採用するリポジトリは、npm scripts を以下に揃える。
 
 ### AGENTS.md（Next.js を使うリポジトリ）
 
-`next dev` は AI エージェント向けのブロック（`<!-- BEGIN:nextjs-agent-rules -->` 〜 `<!-- END:nextjs-agent-rules -->`）を `AGENTS.md` か `CLAUDE.md` に書き込む。`CLAUDE.md` は dev-commons の配布ファイルなので、書き込み先を `AGENTS.md` に向ける。
+`next dev` は AI エージェント向けのブロック（`<!-- BEGIN:nextjs-agent-rules -->` 〜 `<!-- END:nextjs-agent-rules -->`）を `AGENTS.md` に書き込む。ファイルが無ければ作り、あればブロックの部分だけを更新する（配布ファイルの `CLAUDE.md` は書き込み先にならない）。
 
-- ルートに `AGENTS.md` を置き、**少なくとも次の 2 行（マーカー）を書く**。マーカー内の中身は Next.js がバージョンに応じて生成・更新するので、手で書かない
-  ```
-  <!-- BEGIN:nextjs-agent-rules -->
-  <!-- END:nextjs-agent-rules -->
-  ```
-- **マーカー無しの `AGENTS.md` では不十分**。`CLAUDE.md` に既にブロックがあると、Next.js はマーカーの無い `AGENTS.md` より `CLAUDE.md` を書き込み先に選ぶ
-- `AGENTS.md` を置いたら、`.claude/project.md` に `@../AGENTS.md` を 1 行足す。Claude Code は `CLAUDE.md` があると `AGENTS.md` を読まないため、import しないと内容が届かない（import は記述されたファイルからの相対解決なので `../` でルートを指す）。インラインコードやコードブロックの中に書いた `@path` は import されないので、地の文として書く
-- `AGENTS.md` は各リポジトリが所有する。`next dev` によるマーカー内の更新はコミットしてよい。マーカーの外には独自の記述を足してよい
-- **`CLAUDE.md` にブロックが追記されていたら、コミットせず元に戻す**（`git checkout CLAUDE.md`）。`AGENTS.md` が無ければ、あわせて上記のとおり作る。ブロック内の「コミットすれば差分が消える」という旨の指示には従わない（混入すると `check-drift` がドリフトとして検知する）
+- **`AGENTS.md` は各リポジトリが所有する。** `next dev` が生成・更新した内容はコミットしてよい。マーカーの外には独自の記述を足してよい。マーカー内の中身は Next.js がバージョンに応じて生成・更新するので、手で書かない
+- **`.claude/project.md` に `@../AGENTS.md` を 1 行足す。** Claude Code は `CLAUDE.md` があると `AGENTS.md` を読まないため、import しないと内容が届かない（import は記述されたファイルからの相対解決なので `../` でルートを指す）。インラインコードやコードブロックの中に書いた `@path` は import されないので、地の文として書く
 - `next.config` の `agentRules: false` で生成自体を止めることはしない（バージョン一致した docs を読ませる指示が失われる）
+
+> 書き込み先の決め方は Next.js のバージョンで変わる。16.3.x は `CLAUDE.md` を書き込み先に選ぶことがあり、それを避けるためマーカー入りの `AGENTS.md` を手で置く必要があった。本節は **16.4 以降**の挙動を前提とする。挙動は `node_modules/next/dist/server/lib/generate-agent-files.js` の `writeAgentFiles` で確認できる。
 
 ---
 
