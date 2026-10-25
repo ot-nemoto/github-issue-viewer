@@ -34,7 +34,10 @@
       "!next-env.d.ts",
       "!tsconfig.json",
       "!.devcontainer",
-      "!package-lock.json"
+      "!package-lock.json",
+      "!**/*.md",
+      "!**/*.yml",
+      "!**/*.yaml"
     ]
   }
 }
