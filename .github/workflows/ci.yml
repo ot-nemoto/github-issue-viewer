@@ -29,6 +29,11 @@ jobs:
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
+          if [ -d prisma/migrations ]; then
+            echo "migrations=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "migrations=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Generate Prisma client
         if: steps.prisma_check.outputs.exists == 'true'
@@ -51,6 +56,37 @@ jobs:
 
       - name: Unit test
         run: npm run test
+
+      # schema.prisma と prisma/migrations のずれを検出する。ずれると、次の migrate dev が
+      # DROP を含む migration を生成する／DB に無い制約を前提にコードが動く、のどちらかで静かに壊れる。
+      # CI の中だけで使い捨ての Postgres を立て、全 migration を適用した DB と schema.prisma を比べる
+      # （--exit-code: 差分なし 0 / エラー 1 / 差分あり 2）。接続情報は不要。
+      # 検出できないもの: 適用済み migration の後からの書き換え、生 SQL だけで作るオブジェクト（CHECK・トリガー等）。
+      # DIRECT_URL: 配布先の prisma.config.ts が datasource.url として読む環境変数。
+      # migrations が無いリポジトリ（db push 運用）は比べる対象が無いため走らせない。
+      # Docker Hub からの pull という外部依存を持つため、lint・型・テストの結果を先に出せるよう後ろに置く。
+      - name: Schema / migration drift check
+        if: steps.prisma_check.outputs.exists == 'true' && steps.prisma_check.outputs.migrations == 'true'
+        env:
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: |
+          docker run -d --name drift-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:17
+          # -h 127.0.0.1: TCP で確かめる。公式イメージは初回の初期化中に Unix ソケットだけの一時サーバーを
+          #   立てるため、ソケットで確かめると一時サーバーに ready を返され、本番サーバーの起動前に接続しうる。
+          # 上限 60 秒: コンテナが起動直後に落ちると pg_isready は失敗し続け、上限が無いとジョブのタイムアウトまで回る。
+          for _ in $(seq 60); do
+            docker exec drift-pg pg_isready -h 127.0.0.1 -U postgres -q && break
+            sleep 1
+          done
+          docker exec drift-pg pg_isready -h 127.0.0.1 -U postgres
+          npx --no prisma migrate deploy
+          npx --no prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code || {
+            rc=$?
+            if [ "$rc" -eq 2 ]; then
+              echo "::error::schema.prisma と prisma/migrations がずれています。schema を変えたなら prisma migrate dev で migration を作り、migration を変えたなら schema に反映してください"
+            fi
+            exit "$rc"
+          }
 
       # deploy ワークフローが実行するビルドを PR 時点で前倒しし、型エラー以外のビルド破壊
       # （依存解決・バンドラ設定の破壊など）を検知する。時間がかかるため最後に置く。
