@@ -5,7 +5,7 @@
 ## 機能
 
 - 複数リポジトリの Issue / PR を統合リスト表示（リポジトリごとにグループ化・折りたたみ対応）
-- Personal Access Token（PAT）によるプライベートリポジトリ対応
+- Personal Access Token（PAT）によるプライベートリポジトリ対応（Fine-grained PAT・最小権限での発行を推奨。発行手順は [docs/development.md](docs/development.md) 参照）
 - 対象リポジトリの動的な追加・削除（ブラウザ保存）
 - タイプ・ステータス・ラベルによるフィルタリング（複数選択可）
 - API レスポンスのローカルキャッシュ（デフォルト5分、手動更新可）
