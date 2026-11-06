@@ -16,6 +16,23 @@ npm run dev
 
 `.env.local` はローカル開発用途（API キーなど）に使用できるが、現時点では必須項目なし。
 
+## GitHub PAT の発行
+
+アプリはプライベートリポジトリの読み取りに GitHub の Personal Access Token（PAT）を使用する。トークンはブラウザの `localStorage` に平文で保持されるため、**漏洩時の被害範囲と有効時間を最小化する発行方法**を推奨する（設計上の根拠は [architecture.md](architecture.md) を参照）。
+
+### 推奨: Fine-grained personal access token
+
+1. [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new) を開く
+2. **Expiration**: 短め（90 日以内など）に設定する
+3. **Repository access**: `Only select repositories` を選び、閲覧したいリポジトリのみを指定する
+4. **Repository permissions**: 以下を `Read-only` に設定する（Metadata は自動で付与される）
+   - Contents
+   - Issues
+   - Pull requests
+5. 発行したトークンをアプリの設定画面「GitHub Token」に貼り付けて「検証」する
+
+> classic PAT を使う場合は `repo`（プライベート読み取り）/ `read:org`（組織リポジトリ読み取り）スコープが必要だが、権限が広くなるため Fine-grained PAT を優先する。
+
 ## スクリプト
 
 | コマンド | 内容 |

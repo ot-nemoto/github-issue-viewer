@@ -42,6 +42,14 @@
 
 > `CacheEntry` 型の定義はコード（`src/lib/storage/cache.ts`）を正とする。
 
+### トークン保持のセキュリティ方針
+
+GitHub API を直接呼ぶクライアント完結の SPA のため、PAT は `localStorage`（`giv:token`）に平文で保持する。`localStorage` は同一オリジンの JavaScript から読めるため暗号化や保存先変更では XSS 耐性は向上しない。したがって本アプリでは **「漏洩を前提に被害を最小化する」** 方針を採り、以下で担保する。
+
+- **被害範囲・有効時間の最小化**: ユーザーに Fine-grained PAT・対象リポジトリのみ・Read 権限・短い有効期限での発行を UI / ドキュメントで誘導する（発行手順は [development.md](development.md)）。
+- **XSS 面の抑制**: Issue / PR 本文を HTML としてレンダリングしない（本文は関連 Issue 番号の抽出にのみ使用）。本文表示機能を追加する場合はサニタイズを必須とする。
+- **透明性**: トークンがこのブラウザ内にのみ保存されサーバーへ送信されないことを設定画面に明記し、削除手段を提供する。
+
 ## GitHub API 利用方針
 
 - エンドポイント: GitHub REST API v3
@@ -49,7 +57,7 @@
 - PR: `GET /repos/{owner}/{repo}/pulls?state=all&per_page=100&page={n}`
 - ユーザー検証: `GET /user`
 - 認証: `Authorization: Bearer {token}` ヘッダー
-- PAT 必要スコープ: `repo`（プライベートリポジトリ読み取り）、`read:org`（組織リポジトリ読み取り）
+- PAT: Fine-grained PAT を推奨（対象リポジトリのみ・Contents / Issues / Pull requests を Read-only）。classic PAT の場合は `repo`（プライベートリポジトリ読み取り）/ `read:org`（組織リポジトリ読み取り）スコープが必要。発行手順は [development.md](development.md) を参照
 - ページネーション: `Link` ヘッダーを解析して全件取得
 - レート制限: キャッシュにより不要なリクエストを削減（認証済み: 5,000 req/hour）
 
