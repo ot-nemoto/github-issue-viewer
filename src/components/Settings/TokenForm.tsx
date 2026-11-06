@@ -93,6 +93,25 @@ export function TokenForm() {
       {validation.status === "error" && (
         <p className="mt-2 text-sm text-[#cf222e]">✗ {validation.message}</p>
       )}
+      <div className="mt-3 text-xs text-[#636c76] leading-relaxed">
+        <p>
+          漏洩時の被害を最小化するため、
+          <a
+            href="https://github.com/settings/personal-access-tokens/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#0969da] hover:underline"
+          >
+            Fine-grained personal access token
+          </a>
+          を推奨します。対象リポジトリのみを選択し、権限は Read のみ（Contents /
+          Issues / Pull requests）、有効期限は短め（90
+          日以内など）に設定してください。
+        </p>
+        <p className="mt-1">
+          トークンはこのブラウザ内（localStorage）にのみ保存され、サーバーには送信されません。共有端末では利用後に「削除」してください。
+        </p>
+      </div>
     </section>
   );
 }
