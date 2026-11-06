@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getIssues, getPullRequests } from "@/lib/github/client";
+import { projectIssue, projectPullRequest } from "@/lib/github/projectItem";
 import { getCache, setCache } from "@/lib/storage/cache";
 import { getRepos, getToken } from "@/lib/storage/settings";
 import type { GitHubItem } from "@/types";
@@ -44,13 +45,9 @@ async function fetchRepoItems(
 
   const issueItems: GitHubItem[] = issues
     .filter((issue) => !issue.pull_request)
-    .map((issue) => ({ kind: "issue" as const, repo, ...issue }));
+    .map((issue) => projectIssue(issue, repo));
 
-  const prItems: GitHubItem[] = prs.map((pr) => ({
-    kind: "pull_request" as const,
-    repo,
-    ...pr,
-  }));
+  const prItems: GitHubItem[] = prs.map((pr) => projectPullRequest(pr, repo));
 
   return [...issueItems, ...prItems];
 }
