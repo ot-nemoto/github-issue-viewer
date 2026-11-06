@@ -103,7 +103,9 @@ export function IssueItem({ item }: IssueItemProps) {
   const labels = item.labels ?? [];
   const visibleLabels = labels.slice(0, MAX_LABELS);
   const extraCount = labels.length - MAX_LABELS;
-  const relatedIssues = item.kind === "pull_request" ? item.relatedIssues : [];
+  // 旧フォーマットのキャッシュには relatedIssues が無いため ?? [] でフォールバック
+  const relatedIssues =
+    item.kind === "pull_request" ? (item.relatedIssues ?? []) : [];
 
   return (
     <div className="flex gap-3 py-3 px-4 border-b border-[#d0d7de] hover:bg-[#f6f8fa] last:border-b-0 transition-colors">
